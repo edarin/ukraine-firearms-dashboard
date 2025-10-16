@@ -1,0 +1,63 @@
+.filter{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+.key {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-bottom: 0px;
+    padding-top: 0px;
+    margin-right: 1px;
+    line-height: 17px;
+    width: fit-content;
+    display: inline-flex;
+    border-radius: 6px;
+    border-style: solid;
+    border-color: white;
+    border-width: 0.5px;
+    color:#222222 !important;
+    background-color:white;    
+    font-size: 70%;
+    font-weight: 300;
+    white-space: nowrap;
+    user-select: none; /* Standard syntax */
+}
+
+.abs_res, .aut_res{
+  color: white;
+  user-select: none; /* Standard syntax */
+}
+
+.aut_res{
+  font-weight: 300;
+}
+
+.abs_res {
+  font-weight: 300;
+}
+
+.open_res a {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 9px;
+    padding-right: 9px;
+    background:white;
+    margin-right: 1px;
+    width: fit-content;
+    border-radius: 6px;
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+    color:#222222;
+    font-size: 89%;
+    font-weight: 400;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none
+}
+.resource_card .bslib-card {
+    border-color: white !important;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

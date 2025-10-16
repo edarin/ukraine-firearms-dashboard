@@ -1,0 +1,312 @@
+.container, 
+.container-fluid, 
+.container-xxl, 
+.container-xl, 
+.container-lg, 
+.container-md, 
+.container-sm {
+    max-width: 98vw !important;
+}
+h1, h2, h3 {
+    font-weight: 700;
+    color: white;
+}
+h1 {
+    font-size: 5vw;
+    margin-bottom: 11px;
+}
+h2 {
+  font-size: 6vw;
+}
+h3 {
+  font-size: 1.3vw;
+}
+
+.login_title h1{
+    font-size: 12vw;
+}
+.login_title h2{
+    font-size: 3vw;
+}
+
+body {
+    font-weight: 300;
+    user-select: none;
+}
+.tab-pane.active.show[data-value="logged_out"]{
+    text-align: center;
+    margin-top: 5rem;
+    font-weight: 600;  
+}
+
+.filter-option-inner-inner,
+.sw-air-picker-form-control-shiny-bound-input 
+.sw-air-picker-form-control {
+    font-weight: 300;
+}
+.bslib-sidebar-layout>.main{
+  padding: 0px;
+}
+
+.form-control{
+    background: var(--bs-btn-hover-bg);
+}
+.sw-air-picker.form-control {
+  background:#383838;
+  text-align: center;
+  padding: .75em;
+  border-color: #383838;
+}
+#ukr_dashboard-about_content {
+    max-width: 80%;
+    font-size: x-large;
+    font-weight: 300;
+}
+.bslib-sidebar-layout{
+  --bslib-sidebar-border: unset;
+  --bslib-sidebar-vert-border:unset;
+}
+.bslib-sidebar-layout>.collapse-toggle{
+  border-color:white;
+}
+.bttn-gradient.bttn-primary,
+.bttn-simple.bttn-primary, 
+.bttn-simple.bttn-primary:focus, 
+.bttn-fill.bttn-primary:hover{
+  background: white !important;
+  color: #222222;
+  font-size: 80%;
+  width: 108px;
+  font-weight: 700;
+}
+
+a.nav-link.active {
+  color: white !important;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  user-select: none;
+}
+.card-header-tabs .nav-link.active, .card-header-tabs .nav-tabs>li>a.active, .card-header-tabs .nav-pills>li>a.active, .card-header-tabs ul.nav.navbar-nav>li>a.active,
+.nav-tabs .nav-link.active, .nav-tabs>li>a.active, .nav-tabs .nav-pills>li>a.active, .nav-tabs ul.nav.navbar-nav>li>a.active, .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-item.in .nav-link, .nav-tabs .nav-item.show .nav-tabs>li>a, .nav-tabs .nav-item.in .nav-tabs>li>a, .nav-tabs .nav-item.show .nav-pills>li>a, .nav-tabs .nav-item.in .nav-pills>li>a, .nav-tabs>li.show .nav-link, .nav-tabs>li.in .nav-link, .nav-tabs>li.show .nav-tabs>li>a, .nav-tabs>li.in .nav-tabs>li>a, .nav-tabs>li.show .nav-pills>li>a, .nav-tabs>li.in .nav-pills>li>a, .nav-tabs .nav-pills>li.show .nav-link, .nav-tabs .nav-pills>li.in .nav-link, .nav-tabs .nav-pills>li.show .nav-tabs>li>a, .nav-tabs .nav-pills>li.in .nav-tabs>li>a, .nav-tabs .nav-pills>li.show .nav-pills>li>a, .nav-tabs .nav-pills>li.in .nav-pills>li>a, .nav-tabs .nav-item.show ul.nav.navbar-nav>li>a, .nav-tabs .nav-item.in ul.nav.navbar-nav>li>a, .nav-tabs>li.show ul.nav.navbar-nav>li>a, .nav-tabs>li.in ul.nav.navbar-nav>li>a, .nav-tabs .nav-pills>li.show ul.nav.navbar-nav>li>a, .nav-tabs .nav-pills>li.in ul.nav.navbar-nav>li>a, .nav-tabs ul.nav.navbar-nav>li.show:not(.dropdown) .nav-link, .nav-tabs ul.nav.navbar-nav>li.in:not(.dropdown) .nav-link, .nav-tabs ul.nav.navbar-nav>li.show:not(.dropdown) .nav-tabs>li>a, .nav-tabs ul.nav.navbar-nav>li.in:not(.dropdown) .nav-tabs>li>a, .nav-tabs ul.nav.navbar-nav>li.show:not(.dropdown) .nav-pills>li>a, .nav-tabs ul.nav.navbar-nav>li.in:not(.dropdown) .nav-pills>li>a, .nav-tabs ul.nav.navbar-nav>li.show:not(.dropdown) ul.nav.navbar-nav>li>a, .nav-tabs ul.nav.navbar-nav>li.in:not(.dropdown) ul.nav.navbar-nav>li>a {
+  border: unset;
+  --bs-nav-tabs-border-width: 0px;
+}
+.nav-tabs,
+.nav-tabs .nav-link, 
+.nav-tabs>li>a, 
+.nav-tabs .nav-pills>li>a, 
+.nav-tabs ul.nav.navbar-nav>li>a{
+  font-weight: 300;
+  border: unset ; 
+  border-bottom: unset;
+  user-select: none;
+}
+
+.login_title {
+  text-align: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#ukr_dashboard-login_info,
+#ukr_dashboard-signin_info {
+  font-weight: 300;
+  user-select: none;
+}
+.form-control{
+ font-weight: 300;  
+ color: white;
+ user-select: none;
+}
+
+.card,
+.card-header, 
+.card-footer, 
+.card-body {
+    background:#222222;
+    border-color: #222222;
+    box-shadow:0px 0px 0px 0px;
+}
+.bslib-full-screen-enter{
+  background: #222222;
+  border-color: white;
+}
+.login_pannel .card-body{
+  border-radius:6px;
+  background: #222222;
+}
+.login_pannel .bslib-card {
+  border-color: #222222;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top:8rem;
+  min-width: 30vw;
+  width: 30vw;
+}
+
+.firearm_card .bslib-card {
+    border-color: white !important;
+}
+.firearm_card .card-header,
+.accordion-title {
+  font-size: 2vw;
+  padding-bottom: 0px;
+  padding-top: 17px;
+  font-weight:700;
+  z-index: 1;
+} 
+.hide_card {
+  height: 41.9vh;
+  max-height: 41.9vh;
+  display:flex;
+  flex-direction:column;
+  overflow: hidden;
+}
+
+.bslib-sidebar-layout>.sidebar>.sidebar-content{
+  padding-left:0px;
+}
+.show_card .bslib-card {
+  border-width: 1px !important;
+  color: white;
+}
+.show_card {
+  height: 34%;
+  width: 99.9%;
+}
+.bttn-material-circle{
+  box-shadow:0px 0px 0px 0px;
+  color:white;
+}
+
+#ss-connect-dialog {
+    border-radius: 0px !important;
+    box-shadow: none !important;
+}
+.logo_pic img {
+    width: 50px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    user-select: none;
+
+}
+.air-datepicker-cell.-selected-, 
+.air-datepicker-cell.-selected-.-current-,
+.air-datepicker-cell.-selected-.-focus-,
+.air-datepicker-cell.-disabled-.-focus-,
+.air-datepicker-cell.-range-to-,
+.air-datepicker-cell.-range-from{
+    background: #222222;
+    border: none;
+}
+.air-datepicker-button, 
+.air-datepicker-cell.current-,
+.air-datepicker-body--day-name{
+    color: #222222;
+}
+.air-datepicker-cell.-in-range-{
+  background: #BBBABA;
+}
+.air-datepicker-cell.-range-from-{
+  border: none;
+  background: #BBBABA;
+}
+.-in-range-.-focus-.air-other-decade-, 
+.-in-range-.-focus-.air-datepicker-cell.-day-.-other-month-f{
+ background: #E9E8E8; 
+}
+.air-datepicker-cell.-in-range-:hover{
+ background: #E9E8E8;  
+}
+.leaflet-touch .leaflet-control-layers, 
+.leaflet-touch .leaflet-bar{
+  border-width: 0px;
+}
+.leaflet-touch .leaflet-bar a {
+    border-radius: 20px !important;
+    border-width : 0px;
+    background: #222222;
+    color: white;
+    opacity:0.9;
+}
+.leaflet-control-zoom-in, .leaflet-control-zoom-out{
+  font-family:inherit;
+}
+.leaflet-container {
+  font-family:inherit;
+  font-weight: 300;
+}
+.leaflet-container b{
+  font-weight: 700;
+}
+.leaflet-control-container {
+    position: relative;
+    z-index: 1;
+}
+.bttn-material-circle.bttn-default {
+    color: #222222;
+    border-color: #222222;
+    border-width: 1px;
+}
+.info_button {
+    position: absolute;
+    bottom: 3px;
+    left: 3px;
+}
+
+.accordion{
+  --bs-accordion-border-color: white;
+  --bs-accordion-border-radius: 8px;
+}
+.accordion-button{
+  background: transparent;
+}
+.accordion .accordion-button,
+.accordion .accordion-button:not(.collapsed):focus {
+  box-shadow: none;
+}
+.item_tag {
+    padding: 4px;
+    border-radius: 8px;
+    white-space: nowrap;
+    font-size: 70%;
+    font-weight: 300;
+}
+.navbar {
+  --bs-navbar-padding-y: 0px;
+   padding:  0px;
+}
+.navbar>.container, .navbar>.container-fluid, .navbar>.container-sm, .navbar>.container-md, .navbar>.container-lg, .navbar>.container-xl, .navbar>.container-xxl {
+    padding: 0px;
+}
+
+.shiny-output-error {
+  display: none !important;
+}
+
+a#ukr_dashboard_table-download_table {
+    left: 25%;
+    right: 50%;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+button#ukr_dashboard-download_screenshot {
+    left: 25%;
+    right: 50%;
+}
+.about_content {
+    max-width: 80vw;
+}
+
+.bslib-value-box .value-box-value{
+  font-size: 2vw;
+}
+.bslib-value-box .value-box-title{
+  font-size: var(--bs-body-font-size)
+}
+.fa-person-rifle:before, .fa-file:before, .fa-calendar-days:before {
+    font-size: 4vw;
+}
