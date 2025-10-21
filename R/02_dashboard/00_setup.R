@@ -17,33 +17,51 @@ shhh(library(data.table))
 shhh(library(gridlayout))
 shhh(library(shinyWidgets))
 shhh(library(plotly))
-shhh(library(gmailr))
 shhh(library(shinydisconnect))
 shhh(library(htmltools))
 shhh(library(sf))
-shhh(library(sodium))
 shhh(library(duckdb))
 shhh(library(leaflet))
 shhh(library(MoMAColors))
 shhh(library(DT))
 shhh(library(writexl))
 shhh(library(shinyscreenshot))
-shhh(library(MESS))
+shhh(library(googledrive))
+
 # remove silence fun
 rm(shhh)
 
 ## DATA ####
 # load resources
-resource <- fread("data/text/resource_list.csv") %>%
+
+options(
+  googledrive_quiet = TRUE,
+  gargle_oauth_cache = ".secrets",
+  gargle_oauth_email = TRUE
+)
+
+# load resources
+resource_name <- "resource_list.csv"
+resource_path <- file.path('googledrive-temp', resource_name)
+drive_download(resource_name, path = resource_path, overwrite = T)
+resource <- fread(resource_path) %>%
   mutate(resource_date = as.Date(resource_date %>% paste0("-01"))) %>%
   arrange(desc(resource_date))
+
 # load about
-about <- fread("data/text/about.csv", quote = "", fill = TRUE) %>%
+about_name <- "about.csv"
+about_path <- file.path('googledrive-temp', about_name)
+drive_download(about_name, path = about_path, overwrite = T)
+about <- fread(about_path, quote = "", fill = TRUE) %>%
   mutate(
     about_content = str_replace_all(about_content, '["]', ""),
     about_content = str_squish(about_content)
   )
 
+# load users
+users_name <- "users.csv"
+users_path <- file.path('googledrive-temp', users_name)
+id_users_file <- drive_get("users.csv")$id
 
 ## DB CONNECTION ####
 con <- dbConnect(
@@ -51,8 +69,12 @@ con <- dbConnect(
   dbdir = "data/database/ukr_firearms_dashboard.duckdb"
 )
 
-firearms_table <- tbl(con, "ukr_socialMedia")
-firearm_summary_table <- tbl(con, "ukr_socialMedia_summary")
+firearm_table <- tbl(con, "ukr_socialMedia") |>
+  filter(!is.na(post_date)) |>
+  filter(!grepl('None', post_item_eng))
+
+firearm_summary_table <- tbl(con, "ukr_socialMedia_summary") |>
+  filter(!grepl('None', post_item_eng))
 
 # environment for firearms data
 
@@ -62,11 +84,11 @@ set.seed(132)
 # get items
 firearm_col <-
   firearm_summary_table %>%
-  select(item_list_eng, item_list_ukr) %>%
+  select(post_item_eng, post_item_ukr) %>%
   distinct() %>%
   collect() %>%
   mutate(
-    item_list_color = MoMAColors::moma.colors(
+    post_item_color = MoMAColors::moma.colors(
       "OKeeffe",
       n = nrow(.),
       type = "continuous"
@@ -74,7 +96,7 @@ firearm_col <-
       sample()
   ) %>%
   pivot_longer(
-    !item_list_color,
+    !post_item_color,
     values_to = "post_item",
     names_to = "language"
   ) %>%
@@ -82,7 +104,7 @@ firearm_col <-
   distinct()
 
 # create color palette
-palette_color <- firearm_col$item_list_color %>%
+palette_color <- firearm_col$post_item_color %>%
   set_names(firearm_col$post_item)
 palette_factor <- colorFactor(
   palette = palette_color %>% unname(),
