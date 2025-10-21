@@ -19,9 +19,10 @@ dbExecute(
   con,
   "
   CREATE TABLE IF NOT EXISTS ukr_socialMedia (
-    post_id INTEGER PRIMARY KEY,
+    post_id INTEGER,
     post_source TEXT,
     post_date DATE,
+    post_date_month DATE,
     post_link TEXT,
     post_author_ukr TEXT,
     post_author_eng TEXT,
@@ -55,6 +56,17 @@ dbExecute(
     post_item_ukr TEXT,
     post_oblast_latitude DOUBLE,
     post_oblast_longitude DOUBLE
+  )
+  "
+)
+
+# Define schema for sotring processed files
+dbExecute(
+  con,
+  "
+  CREATE TABLE IF NOT EXISTS processed_censs_files (
+    file_name TEXT PRIMARY KEY,
+    processed_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
   "
 )
