@@ -848,6 +848,139 @@ firearm_summary_server <- function(
             )
           )
       })
+      ## TABLE INT ####
+      fields <- c(
+        "post_date",
+        "post_link",
+        "post_author_eng",
+        "post_title_eng",
+        "post_content_eng",
+        "post_oblast_eng",
+        "post_item_eng"
+      ) %>%
+        map_vec(function(x) paste0('"', x, '"', ": true")) %>%
+        paste(collapse = ", ")
+
+      field_names <- c(
+        "post_date",
+        "post_link",
+        "post_author",
+        "post_title",
+        "post_content",
+        "post_oblast",
+        "post_item"
+      ) %>%
+        setNames(c(
+          "Date",
+          "Source",
+          "Author",
+          "Title",
+          "Content",
+          "Oblast",
+          "Item"
+        ))
+
+      table_init <- reactiveVal(
+        firearm_table %>%
+          select(
+            post_date,
+            post_link,
+            ends_with("eng"),
+            -contains('settlement'),
+            -contains('criminal')
+          ) %>%
+          mutate(post_date = as.Date(post_date)) %>%
+          collect() |>
+          rename_with(~ str_replace(., paste0("_", "eng"), "")) %>%
+          mutate(
+            post_oblast = post_oblast %>% str_remove_all("[.]")
+          ) %>%
+          drop_na(post_link) %>%
+          rowwise() %>%
+          mutate(
+            post_item = post_item %>%
+              {
+                if (!is.na(.)) {
+                  str_split(., ";") %>%
+                    map_vec(function(x) {
+                      paste0(
+                        "<span class='item_tag'; style='background-color:",
+                        x %>%
+                          str_split(";") %>%
+                          str_replace_all(fixed(palette_color)),
+                        ";'>",
+                        x %>% str_split(";"),
+                        "</span>",
+                        collapse = " "
+                      )
+                    }) %>%
+                    paste(collapse = " ")
+                } else {
+                  .
+                }
+              }
+          ) %>%
+          ungroup() %>%
+          mutate(
+            post_oblast = post_oblast %>% str_remove_all("[.]"),
+            post_oblast = post_oblast %>%
+              str_replace_all(pattern = ";", replacement = "; ")
+          ) %>%
+          mutate(post_item = post_item %>% str_remove_all("[.]")) %>%
+          rowwise() %>%
+          mutate(
+            post_link = if (str_detect(post_link, "facebook")) {
+              HTML(as.character(tags$a(
+                HTML(as.character(bsicons::bs_icon("facebook"))),
+                href = post_link,
+                target = "_blank"
+              )))
+            } else if (str_detect(post_link, "t.me")) {
+              HTML(as.character(tags$a(
+                HTML(as.character(bsicons::bs_icon("telegram"))),
+                href = post_link,
+                target = "_blank"
+              )))
+            } else {
+              HTML(as.character(tags$a(
+                HTML(as.character(bsicons::bs_icon("globe"))),
+                href = post_link,
+                target = "_blank"
+              )))
+            }
+          ) %>%
+          ungroup() %>%
+          rename(field_names) %>%
+          relocate(2, .after = last_col()) %>%
+          arrange(1)
+      )
+
+      output$firearm_table <- renderDT({
+        table_init() %>%
+          datatable(
+            rownames = FALSE,
+            escape = FALSE,
+            filter = "none",
+            selection = "none",
+            options = list(
+              dom = 'ftp',
+              fixedHeader = TRUE,
+              autoWidth = TRUE,
+              pageLength = 10,
+              ordering = F,
+              scrollX = TRUE,
+              scrollY = "70vh"
+            )
+          ) %>%
+          formatDate(
+            columns = 1,
+            method = "toLocaleDateString",
+            params = list(
+              'en-UK',
+              list(year = 'numeric', month = 'numeric', day = "numeric")
+            )
+          )
+      })
 
       ## UPDATE PLOTS ####
       observeEvent(update_react(), ignoreInit = T, {
@@ -1187,6 +1320,137 @@ firearm_summary_server <- function(
               )
             )
         })
+
+        ### TABLE ####
+        firearm_proxy <- DT::dataTableProxy("firearm_table", session = session)
+
+        fields <- c(
+          "post_date",
+          "post_link",
+          "post_author_eng",
+          "post_title_eng",
+          "post_content_eng",
+          "post_oblast_eng",
+          "post_item_eng"
+        ) %>%
+          map_vec(function(x) paste0('"', x, '"', ": true")) %>%
+          paste(collapse = ", ") %>%
+          str_replace_all("_eng", paste0("_", filter_language))
+
+        #upadte table
+
+        table_submit <- firearm_table %>%
+          filter(
+            post_date_month >= filter_date_min &
+              post_date_month <= filter_date_max
+          ) %>%
+          select(
+            post_date,
+            post_link,
+            ends_with(filter_language),
+            -contains('settlement'),
+            -contains('criminal')
+          ) %>%
+          collect() |>
+          mutate(post_date = post_date %>% as.Date()) %>%
+          rename_with(~ str_replace(., paste0("_", filter_language), "")) %>%
+          filter(str_detect(
+            post_oblast,
+            filter_oblast %>% paste(collapse = "|")
+          )) %>%
+          filter(str_detect(
+            post_item,
+            filter_item %>% paste(collapse = "|")
+          )) %>%
+          drop_na(post_link) %>%
+          rowwise() %>%
+          mutate(
+            post_item = post_item %>%
+              {
+                if (!is.na(.)) {
+                  str_split(., ";") %>%
+                    map_vec(function(x) {
+                      paste0(
+                        "<span class='item_tag'; style='background-color:",
+                        x %>%
+                          str_split(";") %>%
+                          str_replace_all(fixed(palette_color)),
+                        ";'>",
+                        x %>% str_split(";"),
+                        "</span>",
+                        collapse = " "
+                      )
+                    }) %>%
+                    paste(collapse = " ")
+                } else {
+                  .
+                }
+              }
+          ) %>%
+          ungroup() %>%
+          mutate(
+            post_oblast = post_oblast %>% str_remove_all("[.]"),
+            post_oblast = post_oblast %>%
+              str_replace_all(pattern = ";", replacement = "; ")
+          ) %>%
+          mutate(post_item = post_item %>% str_remove_all("[.]")) %>%
+          rowwise() %>%
+          mutate(
+            post_link = case_when(
+              grepl("facebook", post_link) ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("facebook"))),
+                  href = post_link,
+                  target = "_blank"
+                ))),
+              grepl("t.me", post_link) ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("telegram"))),
+                  href = post_link,
+                  target = "_blank"
+                ))),
+              TRUE ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("globe"))),
+                  href = post_link,
+                  target = "_blank"
+                )))
+            )
+          ) %>%
+          ungroup() %>%
+          relocate(2, .after = last_col()) %>%
+          arrange(1)
+
+        if (filter_language == "eng") {
+          colnames(table_submit) <- c(
+            "Date",
+            "Author",
+            "Title",
+            "Content",
+            "Oblast",
+            "Item",
+            "Source"
+          )
+        } else {
+          colnames(table_submit) <- c(
+            "Дата",
+            "Автор",
+            "Назва",
+            "Зміст",
+            "Область",
+            "Стаття",
+            "Джерело"
+          )
+        }
+        table_init(table_submit)
+
+        DT::replaceData(
+          proxy = firearm_proxy,
+          data = table_init(),
+          rownames = FALSE,
+          resetPaging = TRUE
+        )
+
         shinyjs::enable("firearm_submit_filter")
         shinyjs::enable("firearm_reset_filter")
         shinyjs::enable("firearm_language_eng")
