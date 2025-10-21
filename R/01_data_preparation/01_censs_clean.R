@@ -16,6 +16,7 @@ if (file.exists(".env")) {
   library('dotenv')
   load_dot_env(file = ".env")
 }
+
 options(
   googledrive_quiet = TRUE,
   gargle_oauth_cache = ".secrets",
@@ -34,26 +35,111 @@ db_path <- file.path(
   "ukr_firearms_dashboard.duckdb"
 )
 
-#### CENSS DATA ####
+# Prepare processing ----
 censs_files <- drive_find(type = 'xlsx') |>
   pull(name)
 
-censs_files_names_old <- read_rds(here::here(
-  'data/database/censs_files_names.rds'
-))
+# get already processed files
+con <- dbConnect(duckdb::duckdb(), dbdir = db_path)
+censs_files_names_old <- dbGetQuery(
+  con,
+  "SELECT file_name FROM processed_censs_files"
+) %>%
+  pull(file_name)
+dbDisconnect(con, shutdown = TRUE)
 
 files_to_process <- censs_files[
   !match(censs_files, censs_files_names_old, nomatch = 0)
 ]
 
-files_to_process <- censs_files
+
+## Map of oblast names ------
+ukr_eng_map <- tibble(
+  post_oblast_ukr = c(
+    "Вінницька",
+    "Волинська",
+    "Дніпропетровська",
+    "Донецька",
+    "Житомирська",
+    "Закарпатська",
+    "Запорізька",
+    "Івано-Франківська",
+    "Київська",
+    "Кіровоградська",
+    "Луганська",
+    "Львівська",
+    "Миколаївська",
+    "Одеська",
+    "Полтавська",
+    "Рівненська",
+    "Сумська",
+    "Тернопільська",
+    "Харківська",
+    "Херсонська",
+    "Хмельницька",
+    "Черкаська",
+    "Чернівецька",
+    "Чернігівська",
+    "Київ",
+    "невідомо"
+  ),
+  post_oblast_eng = c(
+    "Vinnytsia Oblast",
+    "Volyn Oblast",
+    "Dnipropetrovsk Oblast",
+    "Donetsk Oblast",
+    "Zhytomyr Oblast",
+    "Zakarpattia Oblast",
+    "Zaporizhia Oblast",
+    "Ivano-Frankivsk Oblast",
+    "Kyiv Oblast",
+    "Kirovohrad Oblast",
+    "Luhansk Oblast",
+    "Lviv Oblast",
+    "Mykolaiv Oblast",
+    "Odesa Oblast",
+    "Poltava Oblast",
+    "Rivne Oblast",
+    "Sumy Oblast",
+    "Ternopil Oblast",
+    "Kharkiv Oblast",
+    "Kherson Oblast",
+    "Khmelnytskyi Oblast",
+    "Cherkasy Oblast",
+    "Chernivtsi Oblast",
+    "Chernihiv Oblast",
+    "Kyiv City",
+    "Unknown"
+  )
+)
+
+geocode_map <- ukr_eng_map %>%
+  filter(post_oblast_eng != "Unknown") %>%
+  mutate(
+    geocode_oblast = paste0(post_oblast_eng, ", Ukraine")
+  ) %>%
+  geocode(
+    geocode_oblast,
+    method = 'osm',
+    lat = latitude,
+    long = longitude
+  ) %>%
+  select(
+    post_oblast_eng,
+    post_oblast_latitude = latitude,
+    post_oblast_longitude = longitude
+  )
+
+# Process new files ----
 
 if (length(files_to_process) > 0) {
-  # get db connection
-  con <- dbConnect(duckdb::duckdb(), dbdir = db_path)
-  plan(sequential)
+  #plan(multisession, workers = 4)
 
-  censs_data <- future_lapply(files_to_process[3], function(df_name) {
+  lapply(files_to_process, function(df_name) {
+    #df_name <- files_to_process[1]
+    print(df_name)
+
+    ## Download file from Google Drive -----
     df_path <- here::here('data/database', df_name)
     drive_download(df_name, path = df_path, overwrite = T)
     df <- bind_rows(
@@ -176,7 +262,7 @@ if (length(files_to_process) > 0) {
         .groups = "drop"
       )
 
-    # translate
+    # Translate ----
     df <- df %>%
       rowwise() |>
       mutate(
@@ -225,104 +311,86 @@ if (length(files_to_process) > 0) {
           NA
         ),
         .after = post_content_ukr
-      ) %>%
-      mutate(
-        post_oblast_eng = ifelse(
-          !is.na(post_oblast_ukr),
-          google_translate(post_oblast_ukr, target = "en", source = "uk"),
-          NA
-        ),
-        .before = post_oblast_ukr
-      ) %>%
-      mutate(
-        post_settlement_eng = ifelse(
-          !is.na(post_settlement_ukr),
-          google_translate(post_settlement_ukr, target = "en", source = "uk"),
-          NA
-        ),
-        .before = post_settlement_ukr
-      ) %>%
-      ungroup() %>%
-      # geocode using osm
-      mutate(
-        geocode_oblast = ifelse(
-          !is.na(post_oblast_ukr),
-          paste0(post_oblast_ukr, ", україна"),
-          NA
-        )
-      ) %>%
-      # code as unknown
+      )
+
+    # Map oblast names ----
+    df <- df |>
       mutate(
         post_oblast_ukr = ifelse(
           is.na(post_oblast_ukr),
           "невідомо",
           post_oblast_ukr
-        )
+        ),
+        post_oblast_ukr = post_oblast_ukr %>% str_replace_all(", ", "; "),
+        post_oblast_list = str_split(post_oblast_ukr, "\\s*(;)\\s*"),
+        post_oblast_eng = list(purrr::map_chr(
+          post_oblast_list,
+          ~ {
+            engs <- ukr_eng_map %>%
+              filter(post_oblast_ukr %in% .x) %>%
+              pull(post_oblast_eng)
+            if (length(engs) == 0) {
+              engs <- NA
+            }
+            return(engs)
+          }
+        )),
+        post_oblast_eng = paste(post_oblast_eng, collapse = "; "),
+        .before = post_oblast_ukr
       ) %>%
+      select(-post_oblast_list) |>
+      ungroup() %>%
       mutate(
-        post_oblast_eng = ifelse(
-          is.na(post_oblast_eng),
-          "Unknown",
-          post_oblast_eng
-        )
+        post_item_ukr = post_item_ukr %>%
+          str_replace_all(";", ".;") %>%
+          paste0("."),
+        post_item_eng = post_item_eng %>%
+          str_replace_all(";", ".;") %>%
+          paste0(".")
       )
 
-    file.remove(df_path, verbose = F)
-  })
-
-  censs_data <- censs_data %>%
-    list_rbind() %>%
-    mutate(
-      post_oblast_eng = post_oblast_eng %>% str_replace_all(", ", "; "),
-      post_oblast_ukr = post_oblast_ukr %>% str_replace_all(", ", "; ")
-    ) %>%
-    mutate(
-      post_item_ukr = post_item_ukr %>%
-        str_replace_all(";", ".;") %>%
-        paste0("."),
-      post_item_eng = post_item_eng %>%
-        str_replace_all(";", ".;") %>%
-        paste0(".")
+    df <- df |>
+      mutate(
+        post_date_month <- ceiling_date(post_date, "month")
+      )
+    # Connect to DuckDB ----
+    con <- dbConnect(duckdb::duckdb(), dbdir = db_path)
+    # add data to duckdb table ukr_socialMedia
+    dbWriteTable(
+      con,
+      "ukr_socialMedia",
+      df,
+      append = TRUE
     )
 
-  # add data to duckdb table ukr_socialMedia
-  dbWriteTable(
-    con,
-    "ukr_socialMedia",
-    censs_data,
-    append = TRUE
-  )
+    df_summary <- df %>%
+      select(post_oblast_eng, post_oblast_ukr, post_item_eng, post_item_ukr) %>%
+      separate_longer_delim(c(post_oblast_eng, post_oblast_ukr), "; ") %>%
+      separate_longer_delim(c(post_item_eng, post_item_ukr), "; ") %>%
+      distinct() %>%
+      filter(post_oblast_eng != "Unknown") %>%
+      filter(post_item_eng != "None") %>%
+      left_join(geocode_map, by = "post_oblast_eng")
 
-  # extract summary and geocode
-  censs_data_summary <- censs_data %>%
-    select(post_oblast_eng, post_oblast_ukr, post_item_eng, post_item_ukr) %>%
-    separate_longer_delim(c(post_oblast_eng, post_oblast_ukr), "; ") %>%
-    separate_longer_delim(c(post_item_eng, post_item_ukr), "; ") %>%
-    distinct() %>%
-    filter(post_oblast_eng != "Unknown") %>%
-    filter(post_item_eng != "None") %>%
-    rowwise() %>%
-    geocode(
-      post_oblast_ukr,
-      method = 'osm',
-      lat = post_oblast_latitude,
-      long = post_oblast_longitude
-    ) %>%
-    ungroup()
+    # add data to duckdb table ukr_socialMedia_summary
+    dbWriteTable(
+      con,
+      "ukr_socialMedia_summary",
+      df_summary,
+      append = TRUE
+    )
 
-  # add data to duckdb table ukr_socialMedia_summary
-  dbWriteTable(
-    con,
-    "ukr_socialMedia_summary",
-    censs_data_summary,
-    append = TRUE
-  )
+    # save processed files names
+    dbWriteTable(
+      con,
+      "processed_censs_files",
+      tibble(file_name = df_name),
+      append = TRUE
+    )
 
-  # save processed files names
-  write_rds(
-    censs_files,
-    here::here('data/database/censs_files_names.rds')
-  )
-  # Disconnect when done
-  dbDisconnect(con, shutdown = TRUE)
+    # Disconnect when done
+    dbDisconnect(con, shutdown = TRUE)
+
+    file.remove(df_path)
+  })
 }
