@@ -35,3 +35,4 @@ po/*~
 rsconnect/
 .secrets
 .env
+googledrive-temp/*
