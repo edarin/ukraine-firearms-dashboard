@@ -1,0 +1,183 @@
+# UKR DASHBOARD ####
+# APP ####
+
+## LOAD MODULES ####
+source("R/02_dashboard/00_setup.R")
+source("R/02_dashboard/01_login.R")
+source("R/02_dashboard/02_summary.R")
+source("R/02_dashboard/03_table.R")
+source("R/02_dashboard/04_resource.R")
+source("R/02_dashboard/05_about.R")
+
+## UI ####
+ui <- page_fixed(
+  ### PARAMETERS ####
+  # wait and disconnect ui
+  useWaiter(),
+  waiterPreloader(
+    html = spin_loaders(id = 8, color = "white"),
+    color = "#222222"
+  ),
+  waiterShowOnLoad(
+    html = spin_loaders(id = 8, color = "white"),
+    color = "#222222"
+  ),
+  disconnectMessage(
+    text = "Your session has timed out. Please reload the page.",
+    refresh = "",
+    background = "#222222",
+    size = 36,
+    width = "full",
+    top = "center",
+    colour = "white",
+    overlayColour = "#222222",
+    overlayOpacity = 1
+  ),
+  # google analytics and css
+  tags$head(HTML(
+    "<!-- Google tag (gtag.js) --><script async src='https://www.googletagmanager.com/gtag/js?id=G-HV2EQ4DDG8'></script>
+                 <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-HV2EQ4DDG8');</script>"
+  )),
+  tags$head(HTML(
+    '<script src="https://kit.fontawesome.com/c22d0aa69c.js" crossorigin="anonymous"></script>'
+  )),
+  tags$head(tags$link(
+    rel = "stylesheet",
+    type = "text/css",
+    href = "www/css/00_dashboard.css"
+  )),
+  tags$head(tags$link(
+    rel = "stylesheet",
+    type = "text/css",
+    href = "www/css/00_dashboard_small.css"
+  )),
+  tags$head(tags$link(
+    rel = "stylesheet",
+    type = "text/css",
+    href = "www/css/01_resource.css"
+  )),
+  tags$head(tags$link(
+    rel = "icon",
+    type = "image/png",
+    href = "www/img/sas_bw.png"
+  )),
+  # bootstrap theme
+  theme = bs_theme(
+    bg = "#222222",
+    fg = "white",
+    success = "white",
+    info = NULL,
+    warning = NULL,
+    danger = NULL,
+    primary = "white",
+    secondary = "white",
+    heading_font = bslib::font_google(
+      "Comfortaa",
+      wght = "100;200;300;500;700;900",
+      local = F
+    ),
+    base_font = bslib::font_google(
+      "Comfortaa",
+      wght = "100;200;300;500;700;900",
+      local = F
+    )
+  ),
+  # title
+  title = "Ukraine Firearm Knowledge Portal",
+  lang = "en",
+  ### SECTIONS ####
+  navset_tab(
+    id = "dashboard",
+    nav_spacer(),
+    #### LOG IN ####
+    #nav_panel("Log in", login_ui("ukr_dashboard")),
+    #nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
+    # #### SUMMARY ####
+    nav_panel(
+      "Overview",
+      page_sidebar(
+        title = h1("Overview"),
+        fillable = T,
+        fill = T,
+        sidebar = tagList(
+          firearm_side_ui("ukr_dashboard"),
+          firearm_summary_download_ui("ukr_dashboard")
+        ),
+        firearm_summary_ui("ukr_dashboard")
+      )
+    ),
+    # #### SOURCES ####
+    nav_panel(
+      "Sources",
+      page_sidebar(
+        title = h1("Sources"),
+        fillable = T,
+        fill = T,
+        sidebar = tagList(
+          #firearm_side_ui("ukr_dashboard_table"),
+          firearm_table_download_ui("ukr_dashboard")
+        ),
+        firearm_table_ui("ukr_dashboard")
+      )
+    ),
+    #### DOCUMENTATION ####
+    nav_panel(
+      "Documentation",
+      h1("Documentation"),
+      layout_sidebar(
+        fillable = T,
+        fill = T,
+        sidebar = resource_side_ui("ukr_dashboard"),
+        resource_main_ui("ukr_dashboard")
+      )
+    ),
+    #### ABOUT ####
+    nav_panel("About", h1("About"), about_ui("ukr_dashboard")),
+    #### LOG OUT ####
+    nav_panel("Log out")
+  )
+)
+
+## SERVER ####
+server <- function(input, output, session) {
+  #### LOG IN ####
+  #hide  panels
+  # nav_hide(id = "dashboard", "Welcome")
+  # nav_hide(id = "dashboard", "Summary")
+  # nav_hide(id = "dashboard", "Sources")
+  # nav_hide(id = "dashboard", "Documentation")
+  # nav_hide(id = "dashboard", "Log out")
+
+  #### MODULES ####
+  # log in module
+  login_server("ukr_dashboard", parent_session = session)
+  # summary module
+  firearm_summary_server(
+    "ukr_dashboard",
+    firearm_table = firearm_table,
+    firearm_summary_table = firearm_summary_table,
+    palette_factor = palette_factor,
+    palette_color = palette_color
+  )
+  # # table module
+  firearm_table_server(
+    "ukr_dashboard",
+    firearm_table = firearm_table,
+    firearm_summary_table = firearm_summary_table,
+    palette_color = palette_color
+  )
+  # about module
+  about_server("ukr_dashboard", data = about)
+  # resource module
+  resource_server("ukr_dashboard", data = resource)
+
+  #### LOG OUT ####
+  observeEvent(input$dashboard, {
+    if (input$dashboard == "Log out") {
+      logout_server("ukr_dashboard", parent_session = session)
+    }
+    waiter_hide()
+  })
+}
+
+shinyApp(ui = ui, server = server)
