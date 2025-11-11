@@ -24,11 +24,6 @@ options(
 )
 
 
-gg_secret <- Sys.getenv('GOOGLE_CREDENTIALS')
-dir.create(here::here(".googledrive-temp"), showWarnings = FALSE)
-write(gg_secret, file = here::here(".googledrive-temp", "secrets.json"))
-
-
 db_path <- file.path(
   here::here("data"),
   'database',
@@ -146,10 +141,11 @@ if (length(files_to_process) > 0) {
       df_path %>%
         # read file
         read_excel(sheet = 'main cases') |>
-        mutate(post_source = 'main cases'),
-      df_path %>%
-        read_excel(sheet = 'additional cases') |>
-        mutate(post_source = 'additional cases')
+        mutate(post_source = 'main cases')
+      # ,
+      # df_path %>%
+      #   read_excel(sheet = 'additional cases') |>
+      #   mutate(post_source = 'additional cases')
     ) %>%
       # clean names
       clean_names()
@@ -351,7 +347,7 @@ if (length(files_to_process) > 0) {
 
     df <- df |>
       mutate(
-        post_date_month <- ceiling_date(post_date, "month")
+        post_date_month = ceiling_date(post_date, "month")
       )
     # Connect to DuckDB ----
     con <- dbConnect(duckdb::duckdb(), dbdir = db_path)
