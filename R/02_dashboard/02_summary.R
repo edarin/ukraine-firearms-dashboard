@@ -28,7 +28,7 @@ firearm_summary_ui <- function(id) {
           showcase = icon("calendar-days"),
           theme = "primary",
           fill = TRUE,
-          heigth = "3wv"
+          heigth = "2wv"
         ) %>%
           tags$div(class = "show_card"),
         # number of posts
@@ -38,7 +38,7 @@ firearm_summary_ui <- function(id) {
           showcase = icon("file"),
           theme = "primary",
           fill = TRUE,
-          heigth = "3wv"
+          heigth = "2wv"
         ) %>%
           tags$div(class = "show_card"),
         # number of items
@@ -48,7 +48,7 @@ firearm_summary_ui <- function(id) {
           showcase = icon("person-rifle"),
           theme = "primary",
           fill = TRUE,
-          heigth = "3wv"
+          heigth = "2wv"
         ) %>%
           tags$div(class = "show_card")
       ) %>%
@@ -102,7 +102,7 @@ firearm_side_ui <- function(id) {
     # item
     pickerInput(
       inputId = ns("firearm_item_filter"),
-      label = "Item",
+      label = "Type of SALW",
       multiple = T,
       width = "100%",
       choices = {
@@ -625,12 +625,13 @@ firearm_summary_server <- function(
         map_coords <-
           firearm_summary_table %>%
           collect() %>%
-          select(c(
-            ends_with("eng"),
-            "post_oblast_latitude",
-            "post_oblast_longitude"
-          )) %>%
+          distinct(
+            post_oblast_eng,
+            post_oblast_latitude,
+            post_oblast_longitude
+          ) %>%
           rename_with(~ str_replace(., paste0("_", "eng"), ""))
+
         # create map in leaflet
         map_init <- firearm_table %>%
           select(post_date, post_oblast_eng, post_item_eng) %>%
@@ -645,14 +646,22 @@ firearm_summary_server <- function(
           group_by(post_oblast, post_item) %>%
           summarize(post_mention = n()) %>%
           ungroup() %>%
-          left_join(map_coords, by = join_by(post_oblast, post_item)) %>%
+          group_by(post_oblast) %>%
+          mutate(
+            post_item_prop = post_mention / sum(post_mention),
+            post_mention_total = sum(post_mention)
+          ) %>%
+          filter(post_item_prop == max(post_item_prop)) %>%
+          ungroup() %>%
+          mutate(post_mention_prop = post_mention / sum(post_mention)) %>%
+          left_join(map_coords, by = join_by(post_oblast)) %>%
           drop_na(post_oblast_latitude) %>%
           sf::st_as_sf(
             coords = c("post_oblast_longitude", "post_oblast_latitude"),
             remove = F
           ) %>%
           mutate(col = post_item %>% str_replace_all(fixed(palette_color))) %>%
-          arrange(desc(post_mention), col)
+          arrange(desc(post_mention_prop), col)
 
         # plot map
         map_init %>%
@@ -665,27 +674,25 @@ firearm_summary_server <- function(
           ) %>%
           addCircleMarkers(
             group = "firearm_markers",
-            radius = ~ ifelse(
-              sum(map_init$post_mention) > 50,
-              post_mention / sum(map_init$post_mention) * 5000,
-              post_mention
-            ),
+            radius = ~ post_mention_prop * 100,
             label = ~ paste0(
               "<b>Oblast: </b>",
               post_oblast %>% str_remove_all("[.]"),
-              "<br><b>Item: </b>",
+              "<br><b>Number of mentions: </b>",
+              post_mention_total %>% format(big.mark = ",", scientific = FALSE),
+              "<br><b>Main item: </b>",
               post_item %>% str_remove_all("[.]"),
-              "<br><b>Mentions: </b>",
-              post_mention
+              " (",
+              post_item_prop %>% scales::percent(accuracy = 1),
+              ")"
             ) %>%
               lapply(htmltools::HTML),
-            stroke = T,
-            color = ~ palette_factor(post_item),
+            stroke = F,
             weight = 3,
             opacity = 1,
             fill = T,
             fillColor = ~ palette_factor(post_item),
-            fillOpacity = 0.2,
+            fillOpacity = 0.8,
             labelOptions = labelOptions(
               style = list(
                 "border-radius" = "0px",
@@ -748,8 +755,8 @@ firearm_summary_server <- function(
             axis.text.y = element_blank(),
             axis.title = element_blank(),
             axis.ticks = element_blank(),
-            panel.background = element_rect(fill = 'transparent'),
-            plot.background = element_rect(fill = 'transparent', color = NA)
+            panel.background = element_rect(fill = '#262626'),
+            plot.background = element_rect(fill = '#262626', color = NA)
           )
 
         # plot histogram
@@ -760,7 +767,7 @@ firearm_summary_server <- function(
             hoverlabel = list(
               bgcolor = "white",
               bordercolor = "white",
-              font = list(color = "black", family = "Comfortaa", size = 10),
+              font = list(color = "black", family = "Montserrat", size = 10),
               align = "left"
             ),
             margin = list(l = 0, r = 0, b = 0, t = 0, pad = 0, autoexpand = T),
@@ -814,11 +821,11 @@ firearm_summary_server <- function(
           ) %>%
           config(displayModeBar = FALSE) %>%
           layout(
-            font = list(family = "Comfortaa", color = 'white'),
+            font = list(family = "Montserrat", color = 'white'),
             hoverlabel = list(
               bgcolor = "white",
               bordercolor = "white",
-              font = list(color = "black", family = "Comfortaa", size = 10),
+              font = list(color = "black", family = "Montserrat", size = 10),
               align = "left"
             ),
             margin = list(
@@ -830,8 +837,8 @@ firearm_summary_server <- function(
               autoexpand = TRUE
             ),
             autosize = TRUE,
-            plot_bgcolor = 'transparent',
-            paper_bgcolor = 'transparent',
+            plot_bgcolor = '#262626',
+            paper_bgcolor = '#262626',
             showlegend = FALSE,
             xaxis = list(
               showgrid = FALSE,
@@ -868,7 +875,8 @@ firearm_summary_server <- function(
         "post_title",
         "post_content",
         "post_oblast",
-        "post_item"
+        "post_item",
+        "post_screenshot"
       ) %>%
         setNames(c(
           "Date",
@@ -877,12 +885,14 @@ firearm_summary_server <- function(
           "Title",
           "Content",
           "Oblast",
-          "Item"
+          "Item",
+          "Screenshot"
         ))
 
       table_init <- reactiveVal(
         firearm_table %>%
           select(
+            post_id,
             post_date,
             post_link,
             ends_with("eng"),
@@ -926,30 +936,56 @@ firearm_summary_server <- function(
             post_oblast = post_oblast %>%
               str_replace_all(pattern = ";", replacement = "; ")
           ) %>%
-          mutate(post_item = post_item %>% str_remove_all("[.]")) %>%
+          mutate(
+            post_item = post_item %>% str_remove_all("[.]"),
+            post_screenshot = {
+              url_base <- "https://ukraine-firearms-images.ukraine-firearms-dashboard.workers.dev/"
+              img_url <- paste0(
+                url_base,
+                post_date %>% format("%Y-%m"),
+                "/",
+                post_id,
+                ".png"
+              )
+              paste0(
+                '<a href="',
+                img_url,
+                '" target="_blank" rel="noopener noreferrer" style="display:inline-block;">',
+                '<img src="',
+                img_url,
+                '" style="height:200px; max-width:300px; object-fit:cover; cursor:zoom-in; transition:transform .18s ease;" ',
+                'onmouseover="this.style.transform=\'scale(5)\'; this.style.zIndex=1000; this.style.position=\'relative\';" ',
+                'onmouseout="this.style.transform=\'scale(1)\'; this.style.zIndex=1; this.style.position=\'relative\';"',
+                ' />',
+                '</a>'
+              )
+            }
+          ) |>
           rowwise() %>%
           mutate(
-            post_link = if (str_detect(post_link, "facebook")) {
-              HTML(as.character(tags$a(
-                HTML(as.character(bsicons::bs_icon("facebook"))),
-                href = post_link,
-                target = "_blank"
-              )))
-            } else if (str_detect(post_link, "t.me")) {
-              HTML(as.character(tags$a(
-                HTML(as.character(bsicons::bs_icon("telegram"))),
-                href = post_link,
-                target = "_blank"
-              )))
-            } else {
-              HTML(as.character(tags$a(
-                HTML(as.character(bsicons::bs_icon("globe"))),
-                href = post_link,
-                target = "_blank"
-              )))
-            }
+            post_link = case_when(
+              grepl("facebook", post_link) ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("facebook"))),
+                  href = post_link,
+                  target = "_blank"
+                ))),
+              grepl("t.me", post_link) ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("telegram"))),
+                  href = post_link,
+                  target = "_blank"
+                ))),
+              TRUE ~
+                HTML(as.character(tags$a(
+                  HTML(as.character(bsicons::bs_icon("globe"))),
+                  href = post_link,
+                  target = "_blank"
+                )))
+            )
           ) %>%
           ungroup() %>%
+          select(-post_id) |>
           rename(field_names) %>%
           relocate(2, .after = last_col()) %>%
           arrange(1)
@@ -1036,11 +1072,15 @@ firearm_summary_server <- function(
         # filtered table
         firearm_table_filtered <- firearm_table %>%
           select(
+            post_id,
             post_link,
             post_date,
             post_date_month,
             !!sym(paste0("post_oblast_", filter_language)),
-            !!sym(paste0("post_item_", filter_language))
+            !!sym(paste0("post_item_", filter_language)),
+            !!sym(paste0("post_author_", filter_language)),
+            !!sym(paste0("post_title_", filter_language)),
+            !!sym(paste0("post_content_", filter_language))
           ) %>%
           collect() %>%
           rename_with(~ str_replace(., paste0("_", filter_language), "")) %>%
@@ -1048,12 +1088,12 @@ firearm_summary_server <- function(
           separate_longer_delim(post_oblast, "; ") %>%
           drop_na(post_item) %>%
           drop_na(post_oblast) %>%
-          #filter(post_oblast %in% filter_oblast) %>%
+          filter(post_oblast %in% filter_oblast) %>%
           filter(post_item %in% filter_item) %>%
-          # filter(
-          #   post_date_month >= filter_date_min &
-          #     post_date_month <= filter_date_max
-          # ) %>%
+          filter(
+            post_date_month >= filter_date_min &
+              post_date_month <= filter_date_max
+          ) %>%
           filter(!is.na(post_date_month))
 
         ### BOXES ####
@@ -1080,11 +1120,11 @@ firearm_summary_server <- function(
         ### MAP ####
         map_coords <-
           firearm_summary_table %>%
-          select(c(
-            ends_with(language_react()),
-            "post_oblast_latitude",
-            "post_oblast_longitude"
-          )) %>%
+          distinct(
+            !!sym(paste0("post_oblast_", filter_language)),
+            post_oblast_latitude,
+            post_oblast_longitude
+          ) %>%
           rename_with(~ str_replace(., paste0("_", filter_language), "")) |>
           collect()
 
@@ -1092,14 +1132,22 @@ firearm_summary_server <- function(
           group_by(post_oblast, post_item) %>%
           summarize(post_mention = n()) %>%
           ungroup() %>%
-          left_join(map_coords, by = join_by(post_oblast, post_item)) %>%
+          group_by(post_oblast) %>%
+          mutate(
+            post_item_prop = post_mention / sum(post_mention),
+            post_mention_total = sum(post_mention)
+          ) %>%
+          filter(post_item_prop == max(post_item_prop)) %>%
+          ungroup() %>%
+          mutate(post_mention_prop = post_mention / sum(post_mention)) %>%
+          left_join(map_coords, by = join_by(post_oblast)) %>%
           drop_na(post_oblast_latitude) %>%
           sf::st_as_sf(
             coords = c("post_oblast_longitude", "post_oblast_latitude"),
             remove = F
           ) %>%
           mutate(col = post_item %>% str_replace_all(fixed(palette_color))) %>%
-          arrange(desc(post_mention), col)
+          arrange(desc(post_mention_prop), col)
 
         leafletProxy("firearm_map") %>%
           clearMarkers() %>%
@@ -1107,11 +1155,7 @@ firearm_summary_server <- function(
           addCircleMarkers(
             data = map_submit,
             group = "firearm_markers",
-            radius = ~ ifelse(
-              sum(map_submit$post_mention) > 50,
-              post_mention / sum(map_submit$post_mention) * 5000,
-              post_mention
-            ),
+            radius = ~ post_mention_prop * 100,
             label = ~ paste0(
               ifelse(
                 filter_language == "eng",
@@ -1121,25 +1165,28 @@ firearm_summary_server <- function(
               post_oblast %>% str_remove_all("[.]"),
               ifelse(
                 filter_language == "eng",
-                "<br><b>Item: </b>",
-                "<br><b>Пункт: </b>"
+                "<br><b>Number of mentions: </b>",
+                "<br><b>Кількість згадок: </b>"
               ),
-              post_item %>% str_remove_all("[.]"),
+              post_mention_total %>%
+                format(big.mark = ",", scientific = FALSE),
               ifelse(
                 filter_language == "eng",
-                "<br><b>Mentions: </b>",
-                "<br><b>Згадки: </b>"
+                "<br><b>Main item: </b>",
+                "<br><b>Основний пункт: </b>"
               ),
-              post_mention
+              post_item %>% str_remove_all("[.]"),
+              " (",
+              post_item_prop %>% scales::percent(accuracy = 1),
+              ")"
             ) %>%
               lapply(htmltools::HTML),
-            stroke = T,
-            color = ~ palette_factor(post_item),
+            stroke = F,
             weight = 3,
             opacity = 1,
             fill = T,
             fillColor = ~ palette_factor(post_item),
-            fillOpacity = 0.2,
+            fillOpacity = 0.8,
             labelOptions = labelOptions(
               style = list(
                 "border-radius" = "0px",
@@ -1204,8 +1251,8 @@ firearm_summary_server <- function(
               axis.text.y = element_blank(),
               axis.title = element_blank(),
               axis.ticks = element_blank(),
-              panel.background = element_rect(fill = 'transparent'),
-              plot.background = element_rect(fill = 'transparent', color = NA)
+              panel.background = element_rect(fill = '#262626'),
+              plot.background = element_rect(fill = '#262626', color = NA)
             )
 
           # plot histogram
@@ -1216,7 +1263,7 @@ firearm_summary_server <- function(
               hoverlabel = list(
                 bgcolor = "white",
                 bordercolor = "white",
-                font = list(color = "black", family = "Comfortaa", size = 10),
+                font = list(color = "black", family = "Montserrat", size = 10),
                 align = "left"
               ),
               margin = list(
@@ -1287,11 +1334,11 @@ firearm_summary_server <- function(
             ) %>%
             config(displayModeBar = FALSE) %>%
             layout(
-              font = list(family = "Comfortaa", color = "white"),
+              font = list(family = "Montserrat", color = "white"),
               hoverlabel = list(
                 bgcolor = "white",
                 bordercolor = "white",
-                font = list(color = "black", family = "Comfortaa", size = 10),
+                font = list(color = "black", family = "Montserrat", size = 10),
                 align = "left"
               ),
               margin = list(
@@ -1303,8 +1350,8 @@ firearm_summary_server <- function(
                 autoexpand = TRUE
               ),
               autosize = TRUE,
-              plot_bgcolor = 'transparent',
-              paper_bgcolor = 'transparent',
+              plot_bgcolor = '#262626',
+              paper_bgcolor = '#262626',
               showlegend = FALSE,
               xaxis = list(
                 showgrid = FALSE,
@@ -1339,29 +1386,7 @@ firearm_summary_server <- function(
 
         #upadte table
 
-        table_submit <- firearm_table %>%
-          filter(
-            post_date_month >= filter_date_min &
-              post_date_month <= filter_date_max
-          ) %>%
-          select(
-            post_date,
-            post_link,
-            ends_with(filter_language),
-            -contains('settlement'),
-            -contains('criminal')
-          ) %>%
-          collect() |>
-          mutate(post_date = post_date %>% as.Date()) %>%
-          rename_with(~ str_replace(., paste0("_", filter_language), "")) %>%
-          filter(str_detect(
-            post_oblast,
-            filter_oblast %>% paste(collapse = "|")
-          )) %>%
-          filter(str_detect(
-            post_item,
-            filter_item %>% paste(collapse = "|")
-          )) %>%
+        table_submit <- firearm_table_filtered %>%
           drop_na(post_link) %>%
           rowwise() %>%
           mutate(
@@ -1393,7 +1418,31 @@ firearm_summary_server <- function(
             post_oblast = post_oblast %>%
               str_replace_all(pattern = ";", replacement = "; ")
           ) %>%
-          mutate(post_item = post_item %>% str_remove_all("[.]")) %>%
+          mutate(
+            post_item = post_item %>% str_remove_all("[.]"),
+            post_screenshot = {
+              url_base <- "https://ukraine-firearms-images.ukraine-firearms-dashboard.workers.dev/"
+              img_url <- paste0(
+                url_base,
+                post_date %>% format("%Y-%m"),
+                "/",
+                post_id,
+                ".png"
+              )
+              paste0(
+                '<a href="',
+                img_url,
+                '" target="_blank" rel="noopener noreferrer" style="display:inline-block;">',
+                '<img src="',
+                img_url,
+                '" style="height:200px; max-width:300px; object-fit:cover; cursor:zoom-in; transition:transform .18s ease;" ',
+                'onmouseover="this.style.transform=\'scale(5)\'; this.style.zIndex=1000; this.style.position=\'relative\';" ',
+                'onmouseout="this.style.transform=\'scale(1)\'; this.style.zIndex=1; this.style.position=\'relative\';"',
+                ' />',
+                '</a>'
+              )
+            }
+          ) |>
           rowwise() %>%
           mutate(
             post_link = case_when(
@@ -1418,7 +1467,16 @@ firearm_summary_server <- function(
             )
           ) %>%
           ungroup() %>%
-          relocate(2, .after = last_col()) %>%
+          select(
+            post_date,
+            post_author,
+            post_title,
+            post_content,
+            post_oblast,
+            post_item,
+            post_screenshot,
+            post_link
+          ) %>%
           arrange(1)
 
         if (filter_language == "eng") {
@@ -1429,6 +1487,7 @@ firearm_summary_server <- function(
             "Content",
             "Oblast",
             "Item",
+            "Screenshot",
             "Source"
           )
         } else {
@@ -1439,9 +1498,11 @@ firearm_summary_server <- function(
             "Зміст",
             "Область",
             "Стаття",
+            "Скріншот",
             "Джерело"
           )
         }
+
         table_init(table_submit)
 
         DT::replaceData(
@@ -1460,15 +1521,53 @@ firearm_summary_server <- function(
       })
       ## DOWNLOAD SCREENSHOTS ####
       observeEvent(input$download_screenshot, {
-        list(
-          data.frame(id = "firearm_hist", name = "ukr_media_time"),
-          data.frame(id = "firearm_pie", name = "ukr_media_proportion"),
-          data.frame(id = "firearm_map", name = "ukr_media_map")
-        ) %>%
-          walk(function(x) {
-            screenshot(id = x$id, filename = x$name, scale = 2)
-          })
+        screenshot(filename = 'ukr_firearms_dashboard')
       })
+
+      # DOWNLOAD TABLE ####
+
+      output$download_table <- downloadHandler(
+        filename = function() {
+          paste0("ukr_media_data.xlsx")
+        },
+        content = function(file) {
+          write_xlsx(
+            table_init() %>%
+              rowwise() %>%
+              mutate(
+                across(
+                  any_of(c("Item", "Стаття")),
+                  ~ paste(
+                    na.omit(unlist(str_extract_all(
+                      string = .,
+                      pattern = palette_color %>%
+                        names() %>%
+                        str_remove_all("[.]")
+                    ))),
+                    collapse = "; "
+                  )
+                ),
+                across(
+                  any_of(c("Source", "Джерело")),
+                  ~ unlist(str_match(
+                    string = .,
+                    pattern = 'href="\\s*(.*?)\\s*" target'
+                  ))[2]
+                ),
+                across(
+                  any_of(c("Oblast", "Область")),
+                  ~ str_replace_all(
+                    string = .,
+                    pattern = ";",
+                    replacement = "; "
+                  )
+                )
+              ) %>%
+              ungroup(),
+            path = file
+          )
+        }
+      )
     }
   )
 }
