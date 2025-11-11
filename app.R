@@ -16,22 +16,23 @@ ui <- page_fixed(
   useWaiter(),
   waiterPreloader(
     html = spin_loaders(id = 8, color = "white"),
-    color = "#222222"
+    color = "#262626"
   ),
   waiterShowOnLoad(
     html = spin_loaders(id = 8, color = "white"),
-    color = "#222222"
+    color = "#262626"
   ),
   disconnectMessage(
     text = "Your session has timed out. Please reload the page.",
     refresh = "",
-    background = "#222222",
+    background = "#262626",
     size = 36,
     width = "full",
     top = "center",
     colour = "white",
-    overlayColour = "#222222",
-    overlayOpacity = 1
+    overlayColour = "#262626",
+    overlayOpacity = 1,
+    css = "box-shadow: none;"
   ),
   # google analytics and css
   tags$head(HTML(
@@ -63,21 +64,21 @@ ui <- page_fixed(
   )),
   # bootstrap theme
   theme = bs_theme(
-    bg = "#222222",
+    bg = "#262626",
     fg = "white",
+    primary = "white",
+    secondary = "#4A90E2",
     success = "white",
     info = NULL,
     warning = NULL,
     danger = NULL,
-    primary = "white",
-    secondary = "white",
     heading_font = bslib::font_google(
-      "Comfortaa",
+      "Roboto",
       wght = "100;200;300;500;700;900",
       local = F
     ),
     base_font = bslib::font_google(
-      "Comfortaa",
+      "Montserrat",
       wght = "100;200;300;500;700;900",
       local = F
     )
@@ -85,14 +86,14 @@ ui <- page_fixed(
   # title
   title = "Ukraine Firearm Knowledge Portal",
   lang = "en",
-  ### SECTIONS ####
+  # ### SECTIONS ####
   navset_tab(
     id = "dashboard",
     nav_spacer(),
     #### LOG IN ####
-    #nav_panel("Log in", login_ui("ukr_dashboard")),
-    #nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
-    # #### SUMMARY ####
+    # nav_panel("Log in", login_ui("ukr_dashboard")),
+    # nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
+    #### SUMMARY ####
     nav_panel(
       "Overview",
       page_sidebar(
@@ -106,7 +107,7 @@ ui <- page_fixed(
         firearm_summary_ui("ukr_dashboard")
       )
     ),
-    # #### SOURCES ####
+    #### SOURCES ####
     nav_panel(
       "Sources",
       page_sidebar(
@@ -159,7 +160,7 @@ server <- function(input, output, session) {
     palette_factor = palette_factor,
     palette_color = palette_color
   )
-  # # table module
+  # table module
   firearm_table_server(
     "ukr_dashboard",
     firearm_table = firearm_table,
