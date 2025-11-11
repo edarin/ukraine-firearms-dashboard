@@ -62,6 +62,8 @@ about <- fread(about_path, quote = "", fill = TRUE) %>%
 users_name <- "users.csv"
 users_path <- file.path('googledrive-temp', users_name)
 id_users_file <- drive_get("users.csv")$id
+drive_download(users_name, path = users_path, overwrite = T)
+users <- fread(users_path, quote = "", fill = TRUE)
 
 ## DB CONNECTION ####
 con <- dbConnect(
@@ -70,8 +72,10 @@ con <- dbConnect(
 )
 
 firearm_table <- tbl(con, "ukr_socialMedia") |>
+  filter(post_source == 'main cases') |>
   filter(!is.na(post_date)) |>
-  filter(!grepl('None', post_item_eng))
+  filter(!grepl('None', post_item_eng)) |>
+  filter(!is.na(post_oblast_eng))
 
 firearm_summary_table <- tbl(con, "ukr_socialMedia_summary") |>
   filter(!grepl('None', post_item_eng))
