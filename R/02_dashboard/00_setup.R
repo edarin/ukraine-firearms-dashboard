@@ -22,15 +22,12 @@ shhh(library(htmltools))
 shhh(library(sf))
 shhh(library(duckdb))
 shhh(library(leaflet))
-shhh(library(MoMAColors))
 shhh(library(DT))
 shhh(library(writexl))
 shhh(library(shinyscreenshot))
 shhh(library(googledrive))
-
 # remove silence fun
 rm(shhh)
-
 ## DATA ####
 # load resources
 
@@ -49,21 +46,30 @@ resource <- fread(resource_path) %>%
   arrange(desc(resource_date))
 
 # load about
-about_name <- "about.csv"
-about_path <- file.path('googledrive-temp', about_name)
-drive_download(about_name, path = about_path, overwrite = T)
-about <- fread(about_path, quote = "", fill = TRUE) %>%
+# about_name <- "about.csv"
+# about_path <- file.path('googledrive-temp', about_name)
+# drive_download(about_name, path = about_path, overwrite = T)
+# about <- fread(about_path, quote = "", fill = TRUE) %>%
+#   mutate(
+#     about_content = str_replace_all(about_content, '["]', ""),
+#     about_content = str_squish(about_content)
+#   )
+
+# load information
+popup_name <- "popup_start.csv"
+popup_path <- file.path('googledrive-temp', popup_name)
+drive_download(popup_name, path = popup_path, overwrite = T)
+popup <- fread(popup_path, quote = "", fill = TRUE) %>%
   mutate(
-    about_content = str_replace_all(about_content, '["]', ""),
-    about_content = str_squish(about_content)
+    popup_content = str_replace_all(popup_content, '["]', ""),
+    popup_content = str_squish(popup_content)
   )
 
 # load users
 users_name <- "users.csv"
 users_path <- file.path('googledrive-temp', users_name)
 id_users_file <- drive_get("users.csv")$id
-drive_download(users_name, path = users_path, overwrite = T)
-users <- fread(users_path, quote = "", fill = TRUE)
+
 
 ## DB CONNECTION ####
 con <- dbConnect(
@@ -92,12 +98,17 @@ firearm_col <-
   distinct() %>%
   collect() %>%
   mutate(
-    post_item_color = MoMAColors::moma.colors(
-      "OKeeffe",
-      n = nrow(.),
-      type = "continuous"
-    ) %>%
-      sample()
+    post_item_color = c(
+      "#CF2734",
+      "#A3082A",
+      "#174574",
+      "#19798B",
+      "#EFB050",
+      "#EC8744",
+      "#E75546",
+      "#F3D567",
+      "#3F1E55"
+    )
   ) %>%
   pivot_longer(
     !post_item_color,
