@@ -26,16 +26,21 @@ shhh(library(DT))
 shhh(library(writexl))
 shhh(library(shinyscreenshot))
 shhh(library(googledrive))
+shhh(library(jsonlite))
+shhh(library(httr))
+shhh(library(dotenv))
 # remove silence fun
 rm(shhh)
 ## DATA ####
 # load resources
 
-options(
-  googledrive_quiet = TRUE,
-  gargle_oauth_cache = ".secrets",
-  gargle_oauth_email = TRUE
-)
+if (grepl('Users/EdithD/Documents/git/ukraine-firearms-dashboard', getwd())) {
+  dotenv::load_dot_env(file = '.env')
+}
+
+GOOGLE_TOKEN <- Sys.getenv('GOOGLE_TOKEN')
+# authenticate googledrive
+drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
 
 # load resources
 resource_name <- "resource_list.csv"
@@ -58,6 +63,7 @@ resource <- fread(resource_path) %>%
 # load information
 popup_name <- "popup_start.csv"
 popup_path <- file.path('googledrive-temp', popup_name)
+drive_get(popup_name)
 drive_download(popup_name, path = popup_path, overwrite = T)
 popup <- fread(popup_path, quote = "", fill = TRUE) %>%
   mutate(
