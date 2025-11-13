@@ -3,31 +3,23 @@ library(tidyverse)
 library(readxl)
 library(janitor)
 library(tidygeocoder)
-library(sf)
-library(leaflet)
-library(deeplr)
 library(googledrive)
 library(here)
 library(duckdb)
 library(polyglotr)
-library(future.apply)
 
-if (file.exists(".env")) {
-  library('dotenv')
-  load_dot_env(file = ".env")
+if (grepl('Users/EdithD/Documents/git/ukraine-firearms-dashboard', getwd())) {
+  dotenv::load_dot_env(file = '.env')
 }
 
-options(
-  googledrive_quiet = TRUE,
-  gargle_oauth_cache = ".secrets",
-  gargle_oauth_email = TRUE
-)
-
+GOOGLE_TOKEN <- Sys.getenv('GOOGLE_TOKEN')
+# authenticate googledrive
+drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
 
 db_path <- file.path(
   here::here("data"),
   'database',
-  "ukr_firearms_dashboard.duckdb"
+  "ukr_firearms_dashboard_test.duckdb"
 )
 
 # Prepare processing ----
@@ -108,29 +100,29 @@ ukr_eng_map <- tibble(
   )
 )
 
-geocode_map <- ukr_eng_map %>%
-  filter(post_oblast_eng != "Unknown") %>%
-  mutate(
-    geocode_oblast = paste0(post_oblast_eng, ", Ukraine")
-  ) %>%
-  geocode(
-    geocode_oblast,
-    method = 'osm',
-    lat = latitude,
-    long = longitude
-  ) %>%
-  select(
-    post_oblast_eng,
-    post_oblast_latitude = latitude,
-    post_oblast_longitude = longitude
-  )
 
 # Process new files ----
 
 if (length(files_to_process) > 0) {
   #plan(multisession, workers = 4)
+  geocode_map <- ukr_eng_map %>%
+    filter(post_oblast_eng != "Unknown") %>%
+    mutate(
+      geocode_oblast = paste0(post_oblast_eng, ", Ukraine")
+    ) %>%
+    geocode(
+      geocode_oblast,
+      method = 'osm',
+      lat = latitude,
+      long = longitude
+    ) %>%
+    select(
+      post_oblast_eng,
+      post_oblast_latitude = latitude,
+      post_oblast_longitude = longitude
+    )
 
-  lapply(files_to_process, function(df_name) {
+  lapply(files_to_process[1], function(df_name) {
     #df_name <- files_to_process[1]
     print(df_name)
 
@@ -389,4 +381,6 @@ if (length(files_to_process) > 0) {
 
     file.remove(df_path)
   })
+} else {
+  print("No new CENSS files to process")
 }
