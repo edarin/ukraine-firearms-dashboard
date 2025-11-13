@@ -71,7 +71,7 @@ update_ui <- function(id) {
         markdown(
           "This will update the dashboard data. The data needs to be stored in the google drive under `/data/Official withdrawal_Month_YY`. It needs to contains the xlsx file and a folder called `main cases` with the screenshots. This process can take up to 10 minutes. Once the update is complete, please refresh the page to see the changes."
         ),
-        actionButton(ns("data_update"), "Update data"
+        actionButton(ns("data_update"), "Update data")
       )
     ),
     card(
