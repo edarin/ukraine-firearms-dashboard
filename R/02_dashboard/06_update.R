@@ -2,7 +2,7 @@
 run_workflow <- function(repo, workflow) {
   gh_pat <- Sys.getenv("GITHUB_TOKEN")
   branch <- "main"
-  owner <- owner
+  owner <- "ukraine-firearms-dashboard"
   url <- paste0(
     "https://api.github.com/repos/",
     owner,
