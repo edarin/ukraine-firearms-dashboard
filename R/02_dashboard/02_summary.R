@@ -762,7 +762,7 @@ firearm_summary_server <- function(
         # plot histogram
         hist_plot %>%
           ggplotly(tooltip = HTML("text")) %>%
-          config(displayModeBar = FALSE) %>%
+          plotly::config(displayModeBar = FALSE) %>%
           layout(
             hoverlabel = list(
               bgcolor = "white",
@@ -819,7 +819,7 @@ firearm_summary_server <- function(
             textposition = "none",
             hovertemplate = paste("%{text}", "<extra></extra>")
           ) %>%
-          config(displayModeBar = FALSE) %>%
+          plotly::config(displayModeBar = FALSE) %>%
           layout(
             font = list(family = "Montserrat", color = 'white'),
             hoverlabel = list(
@@ -1258,7 +1258,7 @@ firearm_summary_server <- function(
           # plot histogram
           hist_plot %>%
             ggplotly(tooltip = HTML("text")) %>%
-            config(displayModeBar = FALSE) %>%
+            plotly::config(displayModeBar = FALSE) %>%
             layout(
               hoverlabel = list(
                 bgcolor = "white",
@@ -1332,7 +1332,7 @@ firearm_summary_server <- function(
                 paste("%{text}", "<extra></extra>")
               )
             ) %>%
-            config(displayModeBar = FALSE) %>%
+            plotly::config(displayModeBar = FALSE) %>%
             layout(
               font = list(family = "Montserrat", color = "white"),
               hoverlabel = list(
