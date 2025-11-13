@@ -105,6 +105,10 @@ update_server <- function(id, parent_session = NULL) {
           repo = "ukraine-firearms-dashboard",
           workflow = "update_censs_content.yml"
         )
+        run_workflow(
+          repo = "ukraine-firearms-images",
+          workflow = "update_censs_screenshot.yml"
+        )
         withProgress(
           message = 'Data update in progress',
           detail = 'This will take approximatively 10min',
