@@ -49,6 +49,7 @@ popup_path <- file.path('data/text', popup_name)
 popup <- read_csv(popup_path)
 
 # load users
+dir.create('googledrive-temp', showWarnings = FALSE)
 users_name <- "users.csv"
 users_path <- file.path('googledrive-temp', users_name)
 id_users_file <- drive_get("users.csv")$id
