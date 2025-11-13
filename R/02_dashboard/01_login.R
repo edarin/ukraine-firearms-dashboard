@@ -87,7 +87,7 @@ login_ui <- function(id) {
   )
 }
 #### LOG IN / SIGN IN SERVER ####
-login_server <- function(id, parent_session) {
+login_server <- function(id, parent_session, data = popup) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -112,7 +112,7 @@ login_server <- function(id, parent_session) {
               # show tabs on successful checks
               nav_show(
                 id = "dashboard",
-                "Summary",
+                "Overview",
                 select = T,
                 session = parent_session
               )
@@ -122,12 +122,36 @@ login_server <- function(id, parent_session) {
                 "Documentation",
                 session = parent_session
               )
+              nav_show(id = "dashboard", "About", session = parent_session)
               nav_show(id = "dashboard", "Log out", session = parent_session)
               nav_hide(
                 id = "dashboard",
-                target = "Log in",
+                target = "Authentification",
                 session = parent_session
               )
+              if (
+                input$login_user_email == "ukraine.firearms.dashboard@gmail.com"
+              ) {
+                nav_show(
+                  id = "dashboard",
+                  target = "Update",
+                  session = parent_session
+                )
+              }
+              # show welcome message
+              showModal(modalDialog(
+                title = "Welcome to the Ukraine Firearm Knowledge Portal",
+                HTML(
+                  data %>%
+                    unlist() %>%
+                    unname() %>%
+                    paste(collapse = "<br><br>")
+                ),
+                easyClose = TRUE,
+                footer = tagList(
+                  modalButton("Continue to dashboard")
+                )
+              ))
               # restore original values
               updateTextInput(
                 "login_user_email",
@@ -136,6 +160,7 @@ login_server <- function(id, parent_session) {
               )
               login_text("Please enter your email.")
               shinyjs::enable("login_button")
+
               print(
                 "Dashboard accessed by ",
                 input$login_email,
