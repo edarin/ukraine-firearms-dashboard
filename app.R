@@ -8,6 +8,7 @@ source("R/02_dashboard/02_summary.R")
 source("R/02_dashboard/03_table.R")
 source("R/02_dashboard/04_resource.R")
 source("R/02_dashboard/05_about.R")
+source("R/02_dashboard/06_update.R")
 
 ## UI ####
 ui <- page_fixed(
@@ -91,8 +92,8 @@ ui <- page_fixed(
     id = "dashboard",
     nav_spacer(),
     #### LOG IN ####
-    # nav_panel("Log in", login_ui("ukr_dashboard")),
-    # nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
+    nav_panel("Authentification", login_ui("ukr_dashboard")),
+    nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
     #### SUMMARY ####
     nav_panel(
       "Overview",
@@ -134,8 +135,12 @@ ui <- page_fixed(
     ),
     #### ABOUT ####
     nav_panel("About", h1("About"), about_ui("ukr_dashboard")),
-    #### LOG OUT ####
-    nav_panel("Log out")
+    ## UPDATE ###
+    nav_panel(
+      "Update",
+      h1("Update"),
+      update_ui('ukr_dashboard')
+    )
   )
 )
 
@@ -143,11 +148,11 @@ ui <- page_fixed(
 server <- function(input, output, session) {
   #### LOG IN ####
   #hide  panels
-  # nav_hide(id = "dashboard", "Welcome")
-  # nav_hide(id = "dashboard", "Summary")
-  # nav_hide(id = "dashboard", "Sources")
-  # nav_hide(id = "dashboard", "Documentation")
-  # nav_hide(id = "dashboard", "Log out")
+  nav_hide(id = "dashboard", "Overview")
+  nav_hide(id = "dashboard", "Sources")
+  nav_hide(id = "dashboard", "Documentation")
+  nav_hide(id = "dashboard", "About")
+  nav_hide(id = "dashboard", "Update")
 
   #### MODULES ####
   # log in module
@@ -160,25 +165,14 @@ server <- function(input, output, session) {
     palette_factor = palette_factor,
     palette_color = palette_color
   )
-  # table module
-  firearm_table_server(
-    "ukr_dashboard",
-    firearm_table = firearm_table,
-    firearm_summary_table = firearm_summary_table,
-    palette_color = palette_color
-  )
   # about module
-  about_server("ukr_dashboard", data = about)
+  about_server("ukr_dashboard", parent_session = session)
   # resource module
   resource_server("ukr_dashboard", data = resource)
+  # update module
+  update_server("ukr_dashboard", parent_session = session)
 
-  #### LOG OUT ####
-  observeEvent(input$dashboard, {
-    if (input$dashboard == "Log out") {
-      logout_server("ukr_dashboard", parent_session = session)
-    }
-    waiter_hide()
-  })
+  #onStop(function() dbDisconnect(con, shutdown = T))
 }
 
 shinyApp(ui = ui, server = server)
