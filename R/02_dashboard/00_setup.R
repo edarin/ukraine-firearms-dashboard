@@ -49,6 +49,13 @@ popup_path <- file.path('data/text', popup_name)
 popup <- read_csv(popup_path)
 
 # load users
+if (grepl('Users/EdithD/Documents/git/ukraine-firearms-dashboard', getwd())) {
+  dotenv::load_dot_env(file = '.env')
+}
+
+GOOGLE_TOKEN <- Sys.getenv('GOOGLE_TOKEN')
+# authenticate googledrive
+drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
 dir.create('googledrive-temp', showWarnings = FALSE)
 users_name <- "users.csv"
 users_path <- file.path('googledrive-temp', users_name)
