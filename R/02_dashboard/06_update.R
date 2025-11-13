@@ -55,29 +55,23 @@ update_ui <- function(id) {
   page_fluid(
     card(
       full_screen = T,
-      card_header("Update text"),
+      card_header("Text update"),
       card_body(
         markdown(
-          "Use the buttons below to update the dashboard text content or to trigger a full dashboard update."
+          "Use the button below to update the dashboard text content from the Google drive. This includes the resources, about and popup content. <br> This process can take up to 5 minutes. Once the update is complete, please refresh the page to see the changes."
         ),
         actionButton(ns("text_update"), "Update text")
       )
     ),
-    card_spacer(),
     card(
       full_screen = T,
       card_header("Data update"),
       card_body(
         markdown(
-          "This will update the dashboard data. The data needs to be stored in the google drive under `/data/Official withdrawal_Month_YY`. It needs to contains the xlsx file and a folder called `main cases` with the screenshots. This process can take up to 10 minutes. Once the update is complete, please refresh the page to see the changes."
+          "Use the button below to update the dashboard data. The data needs to be stored in `ukraine.firearms.dashboard` Google drive in the folder `/data/Official withdrawal_Month_YY`. The folder needs to contains the `Official withdrawal_Month_YY.xlsx` file and a folder called `main cases` with the screenshots. <br> This process can take up to 10 minutes. Once the update is complete, please refresh the page to see the changes."
         ),
         actionButton(ns("data_update"), "Update data")
       )
-    ),
-    card(
-      full_screen = T,
-      title = "Update dashboard",
-      actionButton(ns("app_update"), "Update dashboard")
     )
   )
 }
@@ -88,7 +82,22 @@ update_server <- function(id, parent_session = NULL) {
     id,
     function(input, output, parent_session) {
       observeEvent(input$text_update, {
-        showNotification("Text updating…", type = "message")
+        withProgress(
+          message = 'Data update in progress',
+          detail = 'This will take approximatively 10min',
+          value = 0,
+          {
+            n <- 77L
+            for (i in seq_len(n)) {
+              incProgress(1 / n)
+              Sys.sleep(10)
+            }
+          }
+        )
+        showNotification(
+          'Data update done. Please refresh the page',
+          type = "message"
+        )
       })
 
       observeEvent(input$data_update, {
