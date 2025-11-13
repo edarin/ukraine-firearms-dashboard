@@ -58,7 +58,7 @@ update_ui <- function(id) {
       card_header("Text update"),
       card_body(
         markdown(
-          "Use the button below to update the dashboard text content from the Google drive. This includes the resources, about and popup content. <br> This process can take up to 5 minutes. Once the update is complete, please refresh the page to see the changes."
+          "Use the button below to update the dashboard text content from the Google drive. This includes the resources, about and popup content. <br> This process can take up to 4 minutes. Once the update is complete, please refresh the page to see the changes."
         ),
         actionButton(ns("text_update"), "Update text")
       )
@@ -91,10 +91,10 @@ update_server <- function(id, parent_session = NULL) {
           detail = 'This will take approximatively 5min',
           value = 0,
           {
-            n <- 100L
+            n <- 240L
             for (i in seq_len(n)) {
               incProgress(1 / n)
-              Sys.sleep(5)
+              Sys.sleep(1)
             }
           }
         )
