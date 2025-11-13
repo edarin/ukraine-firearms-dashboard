@@ -93,7 +93,6 @@ ui <- page_fixed(
     nav_spacer(),
     #### LOG IN ####
     nav_panel("Authentification", login_ui("ukr_dashboard")),
-    nav_panel("Welcome", h1("Welcome") %>% span(class = "title")),
     #### SUMMARY ####
     nav_panel(
       "Overview",
