@@ -1533,6 +1533,7 @@ firearm_summary_server <- function(
         content = function(file) {
           write_xlsx(
             table_init() %>%
+              select(-post_screenshot) %>%
               rowwise() %>%
               mutate(
                 across(
