@@ -42,10 +42,15 @@ GOOGLE_TOKEN <- Sys.getenv('GOOGLE_TOKEN')
 # authenticate googledrive
 drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
 
+#print local folder structure
+print("Local folder structure:")
+dir.create('googledrive-temp', showWarnings = F)
 # load resources
 resource_name <- "resource_list.csv"
 resource_path <- file.path('googledrive-temp', resource_name)
 drive_download(resource_name, path = resource_path, overwrite = T)
+print(list.files())
+
 resource <- fread(resource_path) %>%
   mutate(resource_date = as.Date(resource_date %>% paste0("-01"))) %>%
   arrange(desc(resource_date))
