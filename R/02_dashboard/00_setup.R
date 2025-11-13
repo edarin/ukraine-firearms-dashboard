@@ -32,49 +32,21 @@ shhh(library(dotenv))
 # remove silence fun
 rm(shhh)
 ## DATA ####
-# load resources
 
-if (grepl('Users/EdithD/Documents/git/ukraine-firearms-dashboard', getwd())) {
-  dotenv::load_dot_env(file = '.env')
-}
-
-GOOGLE_TOKEN <- Sys.getenv('GOOGLE_TOKEN')
-# authenticate googledrive
-drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
-
-#print local folder structure
-print("Local folder structure:")
-dir.create('googledrive-temp', showWarnings = F)
 # load resources
 resource_name <- "resource_list.csv"
-resource_path <- file.path('googledrive-temp', resource_name)
-drive_download(resource_name, path = resource_path, overwrite = T)
-print(list.files())
-
-resource <- fread(resource_path) %>%
-  mutate(resource_date = as.Date(resource_date %>% paste0("-01"))) %>%
-  arrange(desc(resource_date))
+resource_path <- file.path('data/text', resource_name)
+resource <- read_csv(resource_path)
 
 # load about
-# about_name <- "about.csv"
-# about_path <- file.path('googledrive-temp', about_name)
-# drive_download(about_name, path = about_path, overwrite = T)
-# about <- fread(about_path, quote = "", fill = TRUE) %>%
-#   mutate(
-#     about_content = str_replace_all(about_content, '["]', ""),
-#     about_content = str_squish(about_content)
-#   )
+about_name <- "about.csv"
+about_path <- file.path('data/text', about_name)
+about <- read_csv(about_path)
 
-# load information
+# load popup
 popup_name <- "popup_start.csv"
-popup_path <- file.path('googledrive-temp', popup_name)
-drive_get(popup_name)
-drive_download(popup_name, path = popup_path, overwrite = T)
-popup <- fread(popup_path, quote = "", fill = TRUE) %>%
-  mutate(
-    popup_content = str_replace_all(popup_content, '["]', ""),
-    popup_content = str_squish(popup_content)
-  )
+popup_path <- file.path('data/text', popup_name)
+popup <- read_csv(popup_path)
 
 # load users
 users_name <- "users.csv"
