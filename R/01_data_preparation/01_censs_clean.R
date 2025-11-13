@@ -19,7 +19,7 @@ drive_auth(path = GOOGLE_TOKEN, scopes = 'drive')
 db_path <- file.path(
   here::here("data"),
   'database',
-  "ukr_firearms_dashboard_test.duckdb"
+  "ukr_firearms_dashboard.duckdb"
 )
 
 # Prepare processing ----
