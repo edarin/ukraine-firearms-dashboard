@@ -6,7 +6,7 @@ source("R/02_dashboard/00_setup.R")
 source("R/02_dashboard/01_login.R")
 source("R/02_dashboard/02_summary.R")
 source("R/02_dashboard/03_table.R")
-source("R/02_dashboard/04_resource.R")
+# source("R/02_dashboard/04_resource.R")
 source("R/02_dashboard/05_about.R")
 source("R/02_dashboard/06_update.R")
 
@@ -24,7 +24,7 @@ ui <- page_fixed(
     color = "#262626"
   ),
   disconnectMessage(
-    text = "Your session has timed out. Please reload the page.",
+    text = "Your session has timed out. Please reload the page. \n Ваша сесія закінчилась. Будь ласка, оновіть сторінку.",
     refresh = "",
     background = "#262626",
     size = 36,
@@ -44,25 +44,15 @@ ui <- page_fixed(
     '<script src="https://kit.fontawesome.com/c22d0aa69c.js" crossorigin="anonymous"></script>'
   )),
   tags$head(tags$link(
-    rel = "stylesheet",
-    type = "text/css",
-    href = "www/css/00_dashboard.css"
-  )),
-  tags$head(tags$link(
-    rel = "stylesheet",
-    type = "text/css",
-    href = "www/css/00_dashboard_small.css"
-  )),
-  tags$head(tags$link(
-    rel = "stylesheet",
-    type = "text/css",
-    href = "www/css/01_resource.css"
-  )),
-  tags$head(tags$link(
     rel = "icon",
     type = "image/png",
     href = "www/img/sas_bw.png"
   )),
+  tags$head(
+    includeCSS("www/css/00_dashboard.css"),
+    includeCSS("www/css/00_dashboard_small.css"),
+    includeCSS("www/css/01_resource.css")
+  ),
   # bootstrap theme
   theme = bs_theme(
     bg = "#262626",
@@ -74,7 +64,7 @@ ui <- page_fixed(
     warning = NULL,
     danger = NULL,
     heading_font = bslib::font_google(
-      "Roboto",
+      "Montserrat",
       wght = "100;200;300;500;700;900",
       local = F
     ),
@@ -95,9 +85,8 @@ ui <- page_fixed(
     nav_panel("Authentification", login_ui("ukr_dashboard")),
     #### SUMMARY ####
     nav_panel(
-      "Overview",
+      "Overview/Огляд",
       page_sidebar(
-        title = h1("Overview"),
         fillable = T,
         fill = T,
         sidebar = tagList(
@@ -107,37 +96,39 @@ ui <- page_fixed(
         firearm_summary_ui("ukr_dashboard")
       )
     ),
-    #### SOURCES ####
+    #### Database ####
     nav_panel(
-      "Sources",
+      "Database/База даних",
       page_sidebar(
-        title = h1("Sources"),
         fillable = T,
         fill = T,
         sidebar = tagList(
-          #firearm_side_ui("ukr_dashboard_table"),
-          firearm_table_download_ui("ukr_dashboard")
+          firearm_side_ui("ukr_dashboard_db"),
+          firearm_database_download_ui("ukr_dashboard_db")
         ),
-        firearm_table_ui("ukr_dashboard")
+        firearm_database_ui("ukr_dashboard_db")
       )
     ),
-    #### DOCUMENTATION ####
-    nav_panel(
-      "Documentation",
-      h1("Documentation"),
-      layout_sidebar(
-        fillable = T,
-        fill = T,
-        sidebar = resource_side_ui("ukr_dashboard"),
-        resource_main_ui("ukr_dashboard")
-      )
-    ),
+    # #### DOCUMENTATION ####
+    # nav_panel(
+    #   "Documentation",
+    #   h1("Documentation"),
+    #   layout_sidebar(
+    #     fillable = T,
+    #     fill = T,
+    #     sidebar = resource_side_ui("ukr_dashboard"),
+    #     resource_main_ui("ukr_dashboard")
+    #   )
+    # ),
     #### ABOUT ####
-    nav_panel("About", h1("About"), about_ui("ukr_dashboard")),
+    nav_panel(
+      "About/Про",
+      h1("Dashboard description / Опис приладової панелі"),
+      about_ui("ukr_dashboard")
+    ),
     ## UPDATE ###
     nav_panel(
-      "Update",
-      h1("Update"),
+      "Update/Оновлення",
       update_ui('ukr_dashboard')
     )
   )
@@ -148,17 +139,23 @@ server <- function(input, output, session) {
   #### LOG IN ####
   #hide  panels
   nav_hide(id = "dashboard", "Overview")
-  nav_hide(id = "dashboard", "Sources")
+  nav_hide(id = "dashboard", "Database")
   nav_hide(id = "dashboard", "Documentation")
   nav_hide(id = "dashboard", "About")
   nav_hide(id = "dashboard", "Update")
-
   #### MODULES ####
-  # log in module
+  # # log in module
   login_server("ukr_dashboard", parent_session = session)
-  # summary module
+  # # summary module
   firearm_summary_server(
     "ukr_dashboard",
+    firearm_table = firearm_table,
+    firearm_summary_table = firearm_summary_table,
+    palette_factor = palette_factor,
+    palette_color = palette_color
+  )
+  firearm_summary_server(
+    "ukr_dashboard_db",
     firearm_table = firearm_table,
     firearm_summary_table = firearm_summary_table,
     palette_factor = palette_factor,
@@ -170,7 +167,6 @@ server <- function(input, output, session) {
   resource_server("ukr_dashboard", data = resource)
   # update module
   update_server("ukr_dashboard", parent_session = session)
-
   #onStop(function() dbDisconnect(con, shutdown = T))
 }
 
