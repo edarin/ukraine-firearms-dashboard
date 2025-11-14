@@ -1,4 +1,4 @@
-.container, 
+/* .container, 
 .container-fluid, 
 .container-xxl, 
 .container-xl, 
@@ -12,16 +12,14 @@ h1, h2, h3 {
     color: white;
 }
 h1 {
-    font-size: 5vw;
+    font-size: 10vw;
     color: white;
     margin-bottom: 11px;
 }
 h2 {
   font-size: 6vw;
 }
-h3 {
-  font-size: 1.3vw;
-}
+
 
 .login_title h1{
     font-size: 12vw;
@@ -303,15 +301,22 @@ button#ukr_dashboard-download_screenshot {
 }
 .about_content {
     max-width: 80vw;
+} */
+h3 {
+  font-size: 1.5rem;
 }
-
 .bslib-value-box .value-box-value{
-  background-color: #262626;
-  font-size: 1vw;
+  font-size: 1rem
 }
 .bslib-value-box .value-box-title{
-  font-size: var(--bs-body-font-size)
+  font-size: 1rem;
 }
-.fa-person-rifle:before, .fa-file:before, .fa-calendar-days:before {
-    font-size: 4vw;
+.bslib-value-box .value-box-showcase .fas {
+    font-size: 1.5rem;
 }
+.bslib-value-box .value-box-showcase .far {
+    font-size: 1.5rem;
+}
+/* .fa-person-rifle:before, .fa-file:before, .fa-calendar-days:before {
+    font-size: 1px;
+}  */
