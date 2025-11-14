@@ -97,7 +97,9 @@ login_server <- function(id, parent_session, data = popup) {
       output$login_info <- renderText({
         login_text()
       })
-      login_text <- reactiveVal("Please log in using your email address")
+      login_text <- reactiveVal(
+        "Please log in using your email address /n будь ласка, увійдіть, використовуючи свою електронну адресу."
+      )
 
       # action on log in
       observeEvent(input$login_button, {
@@ -112,21 +114,20 @@ login_server <- function(id, parent_session, data = popup) {
               # show tabs on successful checks
               nav_show(
                 id = "dashboard",
-                "Overview",
+                "Overview/Огляд",
                 select = T,
                 session = parent_session
               )
-              nav_show(id = "dashboard", "Sources", session = parent_session)
-              nav_show(
-                id = "dashboard",
-                "Documentation",
-                session = parent_session
-              )
-              nav_show(id = "dashboard", "About", session = parent_session)
-              nav_show(id = "dashboard", "Log out", session = parent_session)
+              nav_show(id = "dashboard", "Database", session = parent_session)
+              # nav_show(
+              #   id = "dashboard",
+              #   "Documentation",
+              #   session = parent_session
+              # )
+              nav_show(id = "dashboard", "About/Про", session = parent_session)
               nav_hide(
                 id = "dashboard",
-                target = "Authentification",
+                target = "Authentification/Аутентифікація",
                 session = parent_session
               )
               if (
@@ -134,13 +135,13 @@ login_server <- function(id, parent_session, data = popup) {
               ) {
                 nav_show(
                   id = "dashboard",
-                  target = "Update",
+                  target = "Update/Оновлення",
                   session = parent_session
                 )
               }
               # show welcome message
               showModal(modalDialog(
-                title = "Welcome to the Ukraine Firearm Knowledge Portal",
+                title = "Welcome to the Ukraine Firearm Knowledge Portal/Ласкаво просимо до Порталу знань про вогнепальну зброю України",
                 HTML(
                   data %>%
                     unlist() %>%
@@ -149,7 +150,9 @@ login_server <- function(id, parent_session, data = popup) {
                 ),
                 easyClose = TRUE,
                 footer = tagList(
-                  modalButton("Continue to dashboard")
+                  modalButton(
+                    "Continue to dashboard/Продовжити до панелі управління"
+                  )
                 )
               ))
               # restore original values
@@ -158,7 +161,9 @@ login_server <- function(id, parent_session, data = popup) {
                 value = "",
                 session = getDefaultReactiveDomain()
               )
-              login_text("Please enter your email.")
+              login_text(
+                "Please enter your email./n Будь ласка, введіть свою електронну адресу."
+              )
               shinyjs::enable("login_button")
 
               print(
@@ -174,12 +179,16 @@ login_server <- function(id, parent_session, data = popup) {
                 value = "",
                 session = getDefaultReactiveDomain()
               )
-              login_text("Please enter a valid email address or sign in.")
+              login_text(
+                "Please enter a valid email address or sign in./n Будь ласка, введіть дійсну електронну адресу або увійдіть."
+              )
             }
           },
           error = function(err) {
             shinyjs::enable("login_button")
-            login_text("Please enter a valid email address or sign in.")
+            login_text(
+              "Please enter a valid email address or sign in./n Будь ласка, введіть дійсну електронну адресу або увійдіть."
+            )
           }
         )
       })
@@ -189,7 +198,7 @@ login_server <- function(id, parent_session, data = popup) {
         signin_text()
       })
       signin_text <- reactiveVal(
-        "Please register to access the Ukraine Firearm Knowledge Portal. Your information will be kept confidential."
+        "Please register to access the Ukraine Firearm Knowledge Portal. Your information will be kept confidential./n Будь ласка, зареєструйтесь, щоб отримати доступ до Порталу знань про вогнепальну зброю України. Ваша інформація буде зберігатися в конфіденційності."
       )
 
       # action on sign in
@@ -203,26 +212,30 @@ login_server <- function(id, parent_session, data = popup) {
           input$signin_user_email %>% nchar() <= 5 |
             str_detect(input$signin_user_email, "@", negate = T)
         ) {
-          signin_text("Please enter a valid email address.")
+          signin_text(
+            "Please enter a valid email address./n Будь ласка, введіть дійсну електронну адресу."
+          )
           shinyjs::enable("signin_button")
         } else if (input$signin_user_email %in% users$email) {
           login_text(
-            "You are already registered. Please log in with your email address."
+            "You are already registered. Please log in with your email address./n Ви вже зареєстровані. Будь ласка, увійдіть за допомогою своєї електронної адреси."
           )
           nav_hide(
             id = "login_card",
-            target = "Sign in",
+            target = "Sign in/Реєстрація",
             session = parent_session
           )
           nav_select(
             id = "login_card",
-            selected = "Log in",
+            selected = "Log in/Увійти",
             session = parent_session
           )
         } else {
           tryCatch(
             {
-              login_text("Please now log in with your email address.")
+              login_text(
+                "Please now log in with your email address./n Тепер увійдіть за допомогою своєї електронної адреси."
+              )
               users <- read_csv(users_path, show_col_types = FALSE) |>
                 mutate(date_signed_in = as.Date(date_signed_in))
 
@@ -250,12 +263,12 @@ login_server <- function(id, parent_session, data = popup) {
               gc()
               nav_hide(
                 id = "login_card",
-                target = "Sign in",
+                target = "Sign in/Реєстрація",
                 session = parent_session
               )
               nav_select(
                 id = "login_card",
-                selected = "Log in",
+                selected = "Log in/Увійти",
                 session = parent_session
               )
               updateTextInput(
@@ -267,7 +280,9 @@ login_server <- function(id, parent_session, data = popup) {
             },
             error = function(err) {
               print(err)
-              signin_text("Please enter a valid email address.")
+              signin_text(
+                "Please enter a valid email address./n Будь ласка, введіть дійсну електронну адресу."
+              )
               shinyjs::enable("signin_button")
             }
           )
@@ -284,7 +299,7 @@ logout_server <- function(id, parent_session) {
     id,
     function(input, output, session) {
       nav_hide(id = "dashboard", target = "Summary", session = parent_session)
-      nav_hide(id = "dashboard", target = "Sources", session = parent_session)
+      nav_hide(id = "dashboard", target = "Database", session = parent_session)
       nav_hide(
         id = "dashboard",
         target = "Documentation",
