@@ -164,7 +164,7 @@ server <- function(input, output, session) {
   # about module
   about_server("ukr_dashboard", data = about)
   # resource module
-  resource_server("ukr_dashboard", data = resource)
+  #resource_server("ukr_dashboard", data = resource)
   # update module
   update_server("ukr_dashboard", parent_session = session)
   #onStop(function() dbDisconnect(con, shutdown = T))
