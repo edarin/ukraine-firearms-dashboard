@@ -5,70 +5,84 @@ firearm_summary_ui <- function(id) {
   tagList(
     # grid layout
     layout_columns(
-      col_widths = c(8, 4),
-      row_heights = c("41vh", "31vh"),
+      col_widths = c(8, 4, 12),
+      row_heights = c("81vh", '150vh'),
       # map
       card(
-        card_header("Locations"),
+        #card_header("Locations"),
         card_body(leafletOutput(ns("firearm_map"))),
         full_screen = T
       ),
-      # summary boxes
-      tagList(
-        # date last record
-        value_box(
-          title = "Last update",
-          value = firearm_table |>
-            distinct(post_date) |>
-            collect() %>%
-            pull() |>
-            max() %>%
-            as.Date() %>%
-            format("%d/%m/%Y"),
-          showcase = icon("calendar-days"),
-          theme = "primary",
-          fill = TRUE,
-          heigth = "2wv"
-        ) %>%
-          tags$div(class = "show_card"),
-        # number of posts
-        value_box(
-          title = "Sources",
-          value = textOutput(ns("box_sources_value")),
-          showcase = icon("file"),
-          theme = "primary",
-          fill = TRUE,
-          heigth = "2wv"
-        ) %>%
-          tags$div(class = "show_card"),
-        # number of items
-        value_box(
-          title = "Mentions",
-          value = textOutput(ns("box_mentions_value")),
-          showcase = icon("person-rifle"),
-          theme = "primary",
-          fill = TRUE,
-          heigth = "2wv"
-        ) %>%
-          tags$div(class = "show_card")
-      ) %>%
-        tags$div(class = "hide_card"),
-      # time series
-      card(
-        card_header("Time series"),
-        card_body(plotlyOutput(ns("firearm_hist"))),
-        full_screen = T
+      layout_column_wrap(
+        width = 1,
+        height = "81vh",
+        heights_equal = "row",
+        # summary boxes
+        layout_column_wrap(
+          height = "31vh",
+          !!!list(
+            # date last record
+            value_box(
+              title = NULL,
+              value = firearm_table |>
+                distinct(post_date) |>
+                collect() %>%
+                pull() |>
+                max() %>%
+                as.Date() %>%
+                format("%d/%m/%Y"),
+              showcase = icon("calendar-days", "fa-1x"),
+              theme = "primary",
+              showcase_layout = "left center"
+            ),
+            # number of posts
+            value_box(
+              title = NULL,
+              value = textOutput(ns("box_sources_value")),
+              showcase = icon("file", "fa-1x"),
+              theme = "primary",
+              showcase_layout = "left center"
+            )
+          ),
+          # number of items
+          value_box(
+            title = NULL,
+            value = textOutput(ns("box_mentions_value")),
+            showcase = icon("person-rifle", "fa-1x"),
+            theme = "primary",
+            showcase_layout = "left center"
+          )
+        ),
+        # proportions
+        card(
+          card_header(h3("By type/За типом")),
+          card_body(plotlyOutput(ns("firearm_pie"))),
+          full_screen = T
+        ),
+        # time series
+        card(
+          card_header(h3("Over time/За часом")),
+          card_body(plotlyOutput(ns("firearm_hist"))),
+          full_screen = T
+        ),
+        fill = F
       ),
-      # proportions
       card(
-        card_header("Proportions"),
-        card_body(plotlyOutput(ns("firearm_pie"))),
-        full_screen = T
+        card_header(h3("Content of posts/Зміст постів")),
+        card_body(
+          DT::DTOutput(ns("firearm_table")),
+          fillable = TRUE,
+          fill = T,
+          min_height = "80vh"
+        ),
+        fill = T
       )
     )
   ) %>%
     tags$div(class = "firearm_card")
 }
+
+
 # SIDE UI INTERFACE ####
 firearm_side_ui <- function(id) {
   ns <- NS(id)
@@ -102,7 +116,7 @@ firearm_side_ui <- function(id) {
     # item
     pickerInput(
       inputId = ns("firearm_item_filter"),
-      label = "Type of SALW",
+      label = "Weapon type",
       multiple = T,
       width = "100%",
       choices = {
@@ -604,7 +618,7 @@ firearm_summary_server <- function(
             pull() %>%
             length() %>%
             format(big.mark = ",", scientific = FALSE),
-          " posts"
+          " posts/пости"
         )
       })
       output$box_mentions_value <- renderText({
@@ -616,7 +630,7 @@ firearm_summary_server <- function(
             drop_na(post_item_eng) %>%
             nrow() %>%
             format(big.mark = ",", scientific = FALSE),
-          " items"
+          " items/згадки"
         )
       })
       ### MAP ####
@@ -668,7 +682,7 @@ firearm_summary_server <- function(
           leaflet(
             options = leafletOptions(
               attributionControl = FALSE,
-              minZoom = 4,
+              minZoom = 6,
               maxZoom = 10
             )
           ) %>%
@@ -801,9 +815,8 @@ firearm_summary_server <- function(
           mutate(
             .text = paste0(
               "<b>Mentions:</b> ",
-
               post_mention,
-              "%<br>",
+              "<br>",
               "<b>Proportion:</b> ",
               format(post_mention_percent, nsmall = 1, big.mark = ","),
               "%<br>"
@@ -1104,7 +1117,7 @@ firearm_summary_server <- function(
               pull() %>%
               length() %>%
               format(big.mark = ",", scientific = FALSE),
-            " posts"
+            "   posts/пости"
           )
         })
 
@@ -1113,7 +1126,7 @@ firearm_summary_server <- function(
             firearm_table_filtered %>%
               nrow() %>%
               format(big.mark = ",", scientific = FALSE),
-            " items"
+            " items/згадки"
           )
         })
 
