@@ -33,10 +33,10 @@ shhh(library(dotenv))
 rm(shhh)
 ## DATA ####
 
-# load resources
-resource_name <- "resource_list.csv"
-resource_path <- file.path('data/text', resource_name)
-resource <- read_csv(resource_path)
+# # load resources
+# resource_name <- "resource_list.csv"
+# resource_path <- file.path('data/text', resource_name)
+# resource <- read_csv(resource_path)
 
 # load about
 about_name <- "about.csv"
