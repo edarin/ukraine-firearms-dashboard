@@ -98,7 +98,7 @@ login_server <- function(id, parent_session, data = popup) {
         login_text()
       })
       login_text <- reactiveVal(
-        "Please log in using your email address /n будь ласка, увійдіть, використовуючи свою електронну адресу."
+        "Please log in using your email address / будь ласка, увійдіть, використовуючи свою електронну адресу."
       )
 
       # action on log in
@@ -162,7 +162,7 @@ login_server <- function(id, parent_session, data = popup) {
                 session = getDefaultReactiveDomain()
               )
               login_text(
-                "Please enter your email./n Будь ласка, введіть свою електронну адресу."
+                "Please enter your email./ Будь ласка, введіть свою електронну адресу."
               )
               shinyjs::enable("login_button")
 
@@ -180,14 +180,14 @@ login_server <- function(id, parent_session, data = popup) {
                 session = getDefaultReactiveDomain()
               )
               login_text(
-                "Please enter a valid email address or sign in./n Будь ласка, введіть дійсну електронну адресу або увійдіть."
+                "Please enter a valid email address or sign in./ Будь ласка, введіть дійсну електронну адресу або увійдіть."
               )
             }
           },
           error = function(err) {
             shinyjs::enable("login_button")
             login_text(
-              "Please enter a valid email address or sign in./n Будь ласка, введіть дійсну електронну адресу або увійдіть."
+              "Please enter a valid email address or sign in./ Будь ласка, введіть дійсну електронну адресу або увійдіть."
             )
           }
         )
@@ -198,7 +198,7 @@ login_server <- function(id, parent_session, data = popup) {
         signin_text()
       })
       signin_text <- reactiveVal(
-        "Please register to access the Ukraine Firearm Knowledge Portal. Your information will be kept confidential./n Будь ласка, зареєструйтесь, щоб отримати доступ до Порталу знань про вогнепальну зброю України. Ваша інформація буде зберігатися в конфіденційності."
+        "Please register to access the Ukraine Firearm Knowledge Portal. Your information will be kept confidential./ Будь ласка, зареєструйтесь, щоб отримати доступ до Порталу знань про вогнепальну зброю України. Ваша інформація буде зберігатися в конфіденційності."
       )
 
       # action on sign in
@@ -213,12 +213,12 @@ login_server <- function(id, parent_session, data = popup) {
             str_detect(input$signin_user_email, "@", negate = T)
         ) {
           signin_text(
-            "Please enter a valid email address./n Будь ласка, введіть дійсну електронну адресу."
+            "Please enter a valid email address./ Будь ласка, введіть дійсну електронну адресу."
           )
           shinyjs::enable("signin_button")
         } else if (input$signin_user_email %in% users$email) {
           login_text(
-            "You are already registered. Please log in with your email address./n Ви вже зареєстровані. Будь ласка, увійдіть за допомогою своєї електронної адреси."
+            "You are already registered. Please log in with your email address./ Ви вже зареєстровані. Будь ласка, увійдіть за допомогою своєї електронної адреси."
           )
           nav_hide(
             id = "login_card",
@@ -234,7 +234,7 @@ login_server <- function(id, parent_session, data = popup) {
           tryCatch(
             {
               login_text(
-                "Please now log in with your email address./n Тепер увійдіть за допомогою своєї електронної адреси."
+                "Please now log in with your email address./ Тепер увійдіть за допомогою своєї електронної адреси."
               )
               users <- read_csv(users_path, show_col_types = FALSE) |>
                 mutate(date_signed_in = as.Date(date_signed_in))
@@ -281,7 +281,7 @@ login_server <- function(id, parent_session, data = popup) {
             error = function(err) {
               print(err)
               signin_text(
-                "Please enter a valid email address./n Будь ласка, введіть дійсну електронну адресу."
+                "Please enter a valid email address./ Будь ласка, введіть дійсну електронну адресу."
               )
               shinyjs::enable("signin_button")
             }

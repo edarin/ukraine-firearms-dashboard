@@ -3,7 +3,7 @@
 firearm_database_ui <- function(id) {
   ns <- NS(id)
   card(
-    height = "80vh",
+    height = "100vh",
     card_header(h3(
       "Details of posts mentioning weapons/Деталі постів, що згадують зброю"
     )),

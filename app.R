@@ -82,7 +82,7 @@ ui <- page_fixed(
     id = "dashboard",
     nav_spacer(),
     #### LOG IN ####
-    nav_panel("Authentification", login_ui("ukr_dashboard")),
+    nav_panel("Authentification/Аутентифікація", login_ui("ukr_dashboard")),
     #### SUMMARY ####
     nav_panel(
       "Overview/Огляд",
