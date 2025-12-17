@@ -81,7 +81,7 @@ firearm_side_ui <- function(id) {
     h3("Filters / Фільтри"),
     tags$div(
       tags$div(
-        "Translate posts",
+        "Translate posts to English/Перекладити пости на англійську",
         class = ".shiny-input-container .control-label"
       ),
       tags$div(
